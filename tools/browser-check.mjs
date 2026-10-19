@@ -29,6 +29,12 @@ const OUT = join(ROOT, ".browser-check");
 const HEADED = process.argv.includes("--headed");
 const STEP = Number(process.env.RD_BROWSER_STEP || 500);
 const BUDGET = Number(process.env.RD_BROWSER_TIMEOUT || 150000);
+// The per-action ceiling. It used to be BUDGET (150 s), which is how one CI run
+// spent its entire 450 s budget without a single assertion failing: a stalled
+// click or navigation sat on the default timeout, twice, and the harness looked
+// like a broken app. Twenty seconds is enough for a cold page on a shared runner
+// and short enough that a stall is one FAIL line, not a lost run.
+const WAIT = Number(process.env.RD_BROWSER_WAIT || 20000);
 
 let chromium;
 try {
@@ -60,6 +66,8 @@ server.on("exit", (code, signal) => {
   serverLog += `\n[server exited code=${code} signal=${signal}]\n`;
 });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let counted = 0;
+const total = () => counted;
 
 async function waitForServer(deadline = 60000) {
   const t0 = Date.now();
@@ -73,6 +81,15 @@ async function waitForServer(deadline = 60000) {
 }
 
 let failures = 0;
+// Which stage the run is in, printed as a notice (annotations, so the API can see
+// them) and repeated in the budget error: "it timed out" is useless, "it timed
+// out in 5.. offline" is a bug report.
+let stage = "boot";
+const at = (name) => {
+  stage = name;
+  console.log(`::notice::stage ${name}`);
+  console.log(`   ${name}`);
+};
 // GitHub turns `::error::` lines in a step's stdout into check-run annotations,
 // and those are readable through the API by a token that cannot read the job log.
 // Without this the browser job can only ever say "exit code 1", which is how this
@@ -80,6 +97,7 @@ let failures = 0;
 // character and a newline would break the command, so both go.
 const ann = (text) => `::error::${String(text).replace(/%/g, "%25").replace(/\s+/g, " ").slice(0, 500)}`;
 const say = (ok, msg, detail = "") => {
+  counted++;
   if (!ok) {
     failures++;
     console.log(ann(`browser check: ${msg}${detail ? ` - ${detail}` : ""}`));
@@ -105,9 +123,10 @@ async function main() {
   page.on("pageerror", (e) => errs.push(`pageerror: ${e.message}`));
   page.on("console", (m) => { if (m.type() === "error") errs.push(`console: ${m.text().slice(0, 160)}`); });
   page.on("response", (r) => net.push({ url: r.url(), status: r.status() }));
-  page.setDefaultTimeout(BUDGET);
+  page.setDefaultTimeout(WAIT);
 
   /* -------------------------------------------------------------- 1.. shell */
+  at("1 shell");
   await page.goto(`${ORIGIN}/`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("#view > *", { timeout: 20000 });
   // Home is a curated shelf (built-ins + rows), not the whole grid - the counts
@@ -131,7 +150,8 @@ async function main() {
   }
 
   /* ------------------------------------------------ 2.. a built-in game paints */
-  await page.goto(`${ORIGIN}/#/play/builtin:chomp`, { waitUntil: "domcontentloaded" });
+  at("2 a built-in game paints");
+  await page.goto(`${ORIGIN}/#/play/builtin:chomp`, { waitUntil: "domcontentloaded", timeout: WAIT }).catch(() => {});
   await page.waitForSelector("canvas", { timeout: 20000 });
   await sleep(1200);
   const paint = await page.evaluate(async () => {
@@ -158,6 +178,7 @@ async function main() {
   await page.screenshot({ path: join(OUT, "play-builtin.png") });
 
   /* ---------------------------------------- 3.. cores.json agrees with the decks */
+  at("3 cores.json agrees with the decks");
   const cores = await page.evaluate(async () => {
     const mods = await import("/js/data/systems.js");
     const res = await fetch("https://cdn.emulatorjs.org/stable/data/cores/cores.json");
@@ -169,6 +190,7 @@ async function main() {
   say(cores.status === 200 && cores.missing.length === 0, "every deck's core exists in the runtime's own list", `${cores.decks} decks vs ${cores.published} published cores${cores.missing.length ? " missing " + cores.missing.join(",") : ""}`);
 
   /* --------------------------------------------- 4.. settings round-trip on reload */
+  at("4 settings round-trip on reload");
   await page.goto(`${ORIGIN}/#/settings`, { waitUntil: "domcontentloaded" });
   await sleep(STEP);
   const changed = await page.evaluate(() => {
@@ -185,6 +207,7 @@ async function main() {
   say(Boolean(changed) && new RegExp(String(changed).split(" ")[0], "i").test(held), "a setting chosen in the browser survives a reload", JSON.stringify(String(changed)));
 
   /* ------------------------------------- 4b. the install row reflects the browser */
+  at("4b the install row reflects the browser");
   const install = await page.evaluate(() => {
     const sec = [...document.querySelectorAll("#view section")].find((x) => /Install & updates/.test(x.textContent || ""));
     const txt = (sec?.textContent || "").replace(/\s+/g, " ").trim();
@@ -205,30 +228,35 @@ async function main() {
   say(install.copy === install.worker, "the offline-copy status is the truth about the worker", `controller=${install.worker} label=${install.copy ? "active" : "silent"}`);
 
   /* ------------------------- 4c. "ask before leaving" is a browser-level prompt */
+  at("4c exit confirm is a browser-level prompt");
   const flip = page.locator("label.row--switch", { hasText: "Ask before leaving a running game" });
   // click the label, not the input: the checkbox underneath is styled away and
   // Playwright will not click a hidden control, while the label is what a user hits
-  await flip.click();
+  await flip.click({ timeout: WAIT });
   await sleep(400);
   const armed = await flip.locator("input").isChecked().catch(() => false);
   await page.goto(`${ORIGIN}/#/play/builtin:chomp`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("canvas#game", { timeout: 20000 }).catch(() => {});
   await sleep(900);
   const asked = page.waitForEvent("dialog", { timeout: 8000 }).catch(() => null);
-  const reloading = page.reload({ waitUntil: "domcontentloaded" }).catch(() => {});
+  const reloading = page.reload({ waitUntil: "domcontentloaded", timeout: WAIT }).catch(() => {});
   const dlg = await asked;
   if (dlg) await dlg.dismiss().catch(() => {}); // dismissing is what keeps the page
   await Promise.race([reloading, sleep(1500)]);
+  // the reload was cancelled by the dialog, but the tab may still be mid-navigation:
+  // let it settle or the next action inherits the wait
+  await page.waitForLoadState("load", { timeout: WAIT }).catch(() => {});
   say(armed && Boolean(dlg), "the exit warning stops a browser reload, not just the in-app quit", dlg ? `dialog type ${dlg.type()}` : "the reload went through unanswered");
   // back to settings before un-arming: the dismissed dialog cancelled the reload,
   // so the page is still the player and the switch is not in the document
   await page.goto(`${ORIGIN}/#/settings`, { waitUntil: "domcontentloaded" });
   await sleep(600);
-  await flip.click().catch(() => {});
+  await flip.click({ timeout: WAIT }).catch(() => {});
   await sleep(400);
   say((await flip.locator("input").isChecked().catch(() => true)) === false, "and the switch is two-way (turned back off for the rest of the run)");
 
     /* ---------------------------------------------------------- 5.. offline */
+  at("5 offline");
   await ctx.setOffline(true);
   await page.goto(`${ORIGIN}/`, { waitUntil: "domcontentloaded" }).catch(() => {});
   await sleep(1500);
@@ -241,6 +269,7 @@ async function main() {
   await ctx.setOffline(false);
 
   /* --------------------------------------------------- 6.. library screenshot */
+  at("6 library screenshot");
   await page.goto(`${ORIGIN}/#/library`, { waitUntil: "domcontentloaded" });
   await sleep(1200);
   await page.screenshot({ path: join(OUT, "library.png") });
@@ -248,6 +277,7 @@ async function main() {
   const noise = errs.filter((e) => !/favicon|WebGL|deprecat|ERR_FAILED|net::ERR|Target crashed/i.test(e));
   say(noise.length === 0, "no uncaught errors in the browser console", noise.slice(0, 3).join(" | ") || "clean");
 /* ------------------------------------------------- 7.. import a ROM and boot a core */
+  at("7 import a ROM and boot a core");
   const romPath = join(OUT, "probe.nes");
   const img = Buffer.alloc(16 + 16384, 0xea); // PRG filled with NOPs, not zeros: a
   img.write("NES\u001a", 0, "binary");      // zeroed cart has a reset vector at an
@@ -333,7 +363,9 @@ async function main() {
 }
 
 try {
-  await Promise.race([main(), sleep(BUDGET * 3).then(() => { throw new Error("browser check exceeded its overall budget"); })]);
+  await Promise.race([main(), sleep(BUDGET * 3).then(() => {
+  throw new Error(`browser check exceeded its overall budget while in: ${stage} (assertions so far: ${total()}, failures: ${failures})`);
+})]);
 } catch (err) {
   console.error(`\nbrowser check failed: ${err && err.message ? err.message : err}`);
   // a throw says more in its stack than its message, and the stack is what the
