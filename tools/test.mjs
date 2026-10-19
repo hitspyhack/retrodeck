@@ -282,6 +282,32 @@ check("no view promises to put a save back into a core", () => {
   return "3 export controls, 0 fake restores";
 });
 
+check("the browser lane can always report its result and then exit", () => {
+  // Twice now the browser job on CI has been red with every assertion green: the
+  // run finished, printed "browser check passed", and hung in teardown until the
+  // job's timeout-minutes killed it. A harness that cannot exit is worse than no
+  // harness, because it reads as a broken app. So the exit path is a checked
+  // property of the file, and its budget has to fit inside the CI job.
+  const src = read(join("tools", "browser-check.mjs"));
+  const ci = read(join(".github", "workflows", "ci.yml"));
+  const claims = [
+    ["close() is raced, not awaited", /Promise\.race\(\[browser\.close\(\)/.test(src)],
+    ["the browser process is killed if it lingers", /browser\.process\?\.\(\)[\s\S]{0,120}SIGKILL/.test(src)],
+    ["a passed run exits by itself", /browser check passed"[\s\S]{0,400}process\.exit\(0\)/.test(src)],
+    ["a failed run exits non-zero", /browser check\(s\) failed`\);[\s\S]{0,40}process\.exit\(1\)/.test(src)],
+    ["the server child is torn down in finally", /finally \{\s*server\.kill\("SIGTERM"\)/.test(src)],
+  ];
+  // the tool's own knobs are milliseconds; the CI job's are minutes
+  const budgetMs = Number((src.match(/RD_BROWSER_TIMEOUT \|\| (\d+)/) || [])[1] || 0);
+  const overall = (budgetMs * 3) / 1000;
+  const mins = Number((ci.match(/name: boot the app in chromium[\s\S]{0,400}?timeout-minutes: (\d+)/) || ci.match(/timeout-minutes: (\d+)/) || [])[1] || 0);
+  claims.push([`the run's own budget (${overall}s) fits the CI job (${mins * 60}s)`, mins > 0 && overall < mins * 60]);
+  const broken = claims.filter(([, ok]) => !ok).map(([what]) => what);
+  if (broken.length) throw new Error(broken.join("\n"));
+  if (!src.includes("playwright")) throw new Error("the lane must keep self-skipping when playwright is absent");
+  return `${claims.length} exit-path claims, budget ${overall}s of ${mins * 60}s`;
+});
+
 check("a deploy folder can be built and contains what the app requests", () => {
   const out = spawn("tools/make-dist.mjs");
   const check2 = spawn("tools/make-dist.mjs", ["--check"]);

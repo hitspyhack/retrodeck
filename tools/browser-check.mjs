@@ -295,7 +295,14 @@ async function main() {
     }
   }
 
-  await browser.close();
+  // A renderer that went down with a wasm core inside it can make close() never
+  // resolve - observed here, where the run printed "browser check passed" and
+  // then hung until it was killed, which on CI reads as a failed job with a
+  // green list of assertions. Every assertion has been recorded by now, so the
+  // teardown is raced and the browser process is killed rather than trusted.
+  await Promise.race([browser.close().catch(() => {}), sleep(4000)]);
+  const proc = browser.process?.();
+  if (proc && proc.exitCode === null) { try { proc.kill("SIGKILL"); } catch { /* already gone */ } }
 }
 
 try {
@@ -312,3 +319,8 @@ if (failures) {
   process.exit(1);
 }
 console.log("\nbrowser check passed");
+
+// Nothing after this point may keep the process alive: the server child is
+// spawned with stdio:"ignore", but a hung browser handle is enough to leave a
+// green run running forever, and CI reports that as a timeout, not a pass.
+process.exit(0);

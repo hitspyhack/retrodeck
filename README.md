@@ -171,7 +171,7 @@ museum kiosk or a plane.
 ## Tests
 
 ```sh
-npm test            # 24 checks, ~7 s, no dependencies
+npm test            # 25 checks, ~7 s, no dependencies
 npm run test:fast   # the static ones only
 npm run test:sw     # sw.js against stubs, nothing else can reach it
 npm run imports     # every module in js/, imported under the DOM shim
@@ -193,7 +193,10 @@ importing a file opens a real file chooser, detects its console and mounts a
 core, that the install row in Settings matches what the browser actually offered,
 and that "ask before leaving a running game" raises a *browser* dialog on reload -
 not only the in-app sheet. It is opt-in because it needs a browser binary -
-`npm test` stays installable with no network. CI runs it as its own job.
+`npm test` stays installable with no network. CI runs it as its own job, and the
+suite checks that the lane can always *finish*: a browser whose renderer died with
+a core inside it can hang `close()` forever, which reads as a failed job under a
+green list of assertions.
 
 **The data.** `node --check` on all 47 modules (app, tools, server). Every model's `tpl`, `pad` and
 `skins` reference resolves, and `buildShell` renders all 61 shells with a sane

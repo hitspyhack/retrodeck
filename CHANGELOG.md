@@ -21,6 +21,11 @@ whole.
   a headless-Chromium lane (`node tools/browser-check.mjs`) that drives the real
   app — import sheet, file chooser, core boot, offline reload, console errors —
   and a `pages` job that publishes `dist/`.
+- The `pages` job asks whether Pages is listening to Actions before it tries to
+  publish. With the source still on *Deploy from a branch*, `configure-pages`
+  answers 400, so the job writes the one setting to flip into its run summary and
+  stays green while the branch pipeline serves the repository root (the app uses
+  relative URLs, so that works).
 - `_headers`, `netlify.toml`, `vercel.json`: the COOP/COEP pair threaded cores
   need, matching what `server.mjs --threads` sends.
 - `tools/make-dist.mjs` builds the deploy folder (`npm run deploy:prepare`), and
@@ -37,6 +42,12 @@ whole.
   sheet cannot see.
 
 ### Fixed
+- The CI `real browser` job was red with every assertion green: after a wasm core
+  took the renderer down, `browser.close()` never resolved, so the step printed
+  `browser check passed` and then died on its own `timeout-minutes`. Teardown is
+  raced with a kill, a finished run calls `process.exit`, and `npm test` now
+  checks the lane's exit path and that its 450 s budget fits the job's 900 s
+  (25 checks in total, green on Node 20 and Node 22).
 - `server.mjs --threads` sent a `Permissions-Policy` header with an
   `cross-origin-isolated=1` directive that is not valid syntax — the browser
   read it as *denying* the feature, so cross-origin isolation never switched on
