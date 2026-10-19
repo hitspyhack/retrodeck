@@ -76,7 +76,10 @@ export function ejsKeyName(code) {
 /* ------------------------------------------------------------------ widget DOM */
 function widgetHTML(w, i) {
   const common = `data-w="${i}" class="w w--${w.t}${w.id ? ` w--${String(w.id).replace(/[^a-z0-9]/gi, "")}` : ""}${w.tint ? ` is-tinted-${w.tint}` : ""}"`;
-  const pos = `style="--x:${w.x};--y:${w.y};--s:${w.s ?? 9};--w:${w.w ?? w.s ?? 9};--h:${w.h ?? w.s ?? 9};${w.angle ? `--rot:${w.angle}deg;` : ""}"`;
+  // every geometry knob is an inline custom property so the CSS stays generic;
+  // --rows matters because a C64 keybed is 5 or 6 rows, not the 4 the grid
+  // would otherwise assume
+  const pos = `style="--x:${w.x};--y:${w.y};--s:${w.s ?? 9};--w:${w.w ?? w.s ?? 9};--h:${w.h ?? w.s ?? 9};${w.angle ? `--rot:${w.angle}deg;` : ""}${w.rows ? `--rows:${w.rows};` : ""}"`;
   switch (w.t) {
     case "dpad":
       return `<div ${common} ${pos} data-dpad="1" role="group" aria-label="D-pad">

@@ -352,6 +352,10 @@ if (!FAST) {
   check("the EmulatorJS vendor tool works against a local mirror", () => spawn("tools/test-vendor.mjs").split("\n").pop());
 }
 
+check("every module in js/ imports cleanly", () => spawn("tools/check-imports.mjs").split("\n").slice(-2)[0].trim().replace(/^ok\s+/, ""));
+
+check("the service worker caches the app and leaves the runtime alone", () => spawn("tools/test-sw.mjs").split("\n").filter((l) => l.startsWith("ok")).length + " behaviours verified");
+
 check("the server serves every file the app asks for (and nothing above the repo)", () => {
   const r = spawnSync(process.execPath, [join(ROOT, "tools", "serve-check.mjs")], { encoding: "utf8", timeout: 120000 });
   const out = (r.stdout || "") + (r.stderr || "");

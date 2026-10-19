@@ -9,7 +9,7 @@ import { store, fmtBytes } from "../core/store.js";
 import { SYSTEMS, SYSTEM_BY_ID } from "../data/systems.js";
 import { PADS } from "../data/layouts.js";
 import { vault } from "../core/idb.js";
-import { probeEmulator, localVendorPresent, dataBase, CDN_VERSIONS } from "../core/emulator.js";
+import { probeEmulator, localVendorPresent, dataBase, pickCore, CDN_VERSIONS } from "../core/emulator.js";
 import { h, mount, toggle, range, select, sectionTitle, toast, sheet, pickFiles, confirmSheet, copyText, download } from "../ui.js";
 import { keyGrid } from "./config.js";
 import { INDEX_META, BUILTINS, sysName } from "./parts.js";
@@ -154,26 +154,45 @@ export async function renderSettings(root, ctx) {
           h("span.small.mono.muted", {}, `source: ${src} · ${g("emulator.version", "stable")}`)));
     }
 
+    /**
+     * Hand the runtime's small files to whoever can keep them: the service
+     * worker (Cache Storage, so a cold offline start still boots) and the
+     * browser's own HTTP cache (which the core's loader reads directly).
+     * The .wasm payloads are deliberately not fetched here - the emulator
+     * caches those in IndexedDB, and pulling them twice would be a lot of
+     * megabytes for nothing.
+     */
     async function warm(btn) {
       btn.disabled = true;
       btn.textContent = "fetching…";
       const urls = coreUrls();
-      const res = await Promise.allSettled(urls.map((u) => fetch(u, { mode: "cors" }).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))));
+      const reg = await navigator.serviceWorker?.getRegistration?.().catch(() => null);
+      reg?.active?.postMessage({ type: "warm", urls });
+      const res = await Promise.allSettled(urls.map((u) => fetch(u, { mode: "cors", cache: "reload" }).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))));
       const ok = res.filter((x) => x.status === "fulfilled").length;
+      const failed = res.find((x) => x.status === "rejected");
       toast(
-        ok ? `${ok}/${urls.length} files cached by the service worker - they now work offline` : "Nothing could be fetched: offline, or the CDN refused the request",
+        ok
+          ? `${ok}/${urls.length} loader files cached - the deck boots offline now. Cores themselves are stored by the emulator under Settings ▸ Emulator ▸ Keep cores in browser storage.`
+          : `Nothing could be fetched: offline, or the mirror refused (${failed ? failed.reason?.message : "no urls"})`,
         ok ? "good" : "bad",
-        5200,
+        6000,
       );
       btn.disabled = false;
       btn.textContent = "Warm the core cache";
     }
   }
 
-  const CORES = ["nes", "snes", "gambatte", "mgba", "vba_next", "mupen64next", "genesis_plus_gx", "picodrive", "mednafen_pce_fast", "pcsx_rearmed", "melonds", "fbneo", "prboom"];
+  /**
+   * The urls the app would really ask for: each deck's chosen core, resolved
+   * through pickCore so this list cannot drift from what the player boots (a
+   * hand-written list here once warmed gambatte/mgba while the decks asked for
+   * gb/gba, which is a very confident way of caching the wrong files).
+   */
   function coreUrls() {
     const base = dataBase().replace(/\/?$/, "/");
-    return [`${base}loader.js`, `${base}wasm/rt-wasm.js`, ...CORES.map((c) => `${base}cores/${c}.js`)];
+    const cores = [...new Set(SYSTEMS.map((s) => pickCore(s.id, {})).filter(Boolean))].sort();
+    return [`${base}loader.js`, `${base}version.json`, `${base}wasm/rt-wasm.js`, ...cores.map((c) => `${base}cores/${c}.js`)];
   }
 
   /* ----------------------------------------------------------- keyboard */

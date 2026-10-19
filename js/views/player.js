@@ -491,6 +491,9 @@ export class PlayerView {
         this.layoutPad();
       }
       if (k === "emulator.inputBridge" && !this.built) this.deck?.setBridge(v);
+      // the shell reads its glass state from a data attribute, so this is a
+      // two-line live edit rather than a rebuild of the hardware art
+      if (k === "play.glass") this.el.querySelector(".shell")?.setAttribute("data-glass", v);
     };
     const body = h("div", { style: { display: "grid", gap: "8px" } },
       range("Pad size", store.get("play.padScale", 1), 0.6, 1.6, 0.05, (v) => set("play.padScale", v), (v) => `${Math.round(v * 100)}%`),
@@ -498,12 +501,17 @@ export class PlayerView {
       toggle("Show the on-screen pad", store.get("play.showPad", true), (v) => set("play.showPad", v)),
       toggle("Float the pad over the picture", store.get("play.padFloat", true), (v) => set("play.padFloat", v)),
       toggle("Haptics", store.get("play.haptics", true), (v) => set("play.haptics", v)),
+      toggle("Screen glass overlay", store.get("play.glass", "on") !== "off", (v) => set("play.glass", v ? "on" : "off")),
       this.built
         ? h("div.notice", {}, h("span", {}, `Built-in game · ${this.gameDef.w}×${this.gameDef.h} canvas, 60 Hz fixed step, ${PADS[this.padId]?.name || this.padId}.`))
         : h("div.rows", {},
             h("div.row", {},
               h("span.row__label", {}, "Core"),
-              h("b.mono.small", {}, this.emu?.cfg?.core || this.cfg.core || this.sys.ejsCore)),
+              h(
+                "b.mono.small",
+                {},
+                this.emu?.coreName || this.cfg.core || (this.sys.ejsCore === "auto" ? "detected from the file" : this.sys.ejsCore)
+              )),
             h("div.row", {},
               h("span.row__label", {}, "Shader"),
               h("b.mono.small", {}, this.cfg.shader || "none")),

@@ -136,45 +136,60 @@ museum kiosk or a plane.
 ## Tests
 
 ```sh
-npm test           # 17 checks, ~6 s, no dependencies
-npm run test:fast  # static checks only
-npm run sim        # the six built-in games, 300 frames each, with fake input
-npm run serve:check# boots its own server, crawls the module graph, probes traversal
-npm run audit      # which classes the JS renders vs what CSS defines
+npm test            # 19 checks, ~7 s, no dependencies
+npm run test:fast   # the static ones only
+npm run test:sw     # sw.js against stubs, nothing else can reach it
+npm run imports     # every module in js/, imported under the DOM shim
+npm run sim         # the six built-in games, frame by frame, with fake input
+npm run serve:check # boots its own server, crawls the module graph, probes traversal
+npm run audit       # classes and CSS variables the JS renders vs what css/ defines
 ```
 
-What it proves is deliberate, because a project with no build step has no
-compiler to catch drift:
+Nineteen checks, because a project with no build step has no compiler to catch
+drift - and no browser in this sandbox either, so every one of them runs in node:
 
-1. `node --check` on all 38 modules.
-2. Every model's `tpl`/`pad`/`skins` reference resolves; `buildShell` renders
-   all 61 shells and returns a sane screen box for each.
-3. Every pad id a system advertises exists in `layouts.js`; no widget escapes
-   its field; button `ejs` indexes are within the core's table; key entries are
-   real `KeyboardEvent.code` values; `controlScheme` names are ones EmulatorJS
-   accepts (anything else is dropped rather than guessed).
-4. Every skin supplies the CSS variables the shell and pad read, in parseable
-   colours.
-5. `js/data/games.generated.js` is byte-for-byte re-derivable from
-   `data/source/games.tsv` + `homebrew/`, ids are unique, no row carries a
-   remote file path, and the per-system tallies add up.
-6. The six built-in games are simulated for 300 frames each (input profiles,
-   scoring, level flow, game-over) in `tools/sim.mjs`.
-7. **The whole app boots headlessly**: `tools/dom-smoke.mjs` installs a ~400-line
-   DOM shim, imports `js/app.js`, visits every route, mounts each built-in,
-   imports a fake Game Boy image into the vault, attaches it to a catalogue
-   entry, opens the game sheet, presses a pad button, saves a state through the
-   real toolbar, captures a key into the keyboard map and leaves the player —
-   asserting that every view produced markup instead of throwing.
-8. No document anywhere links to game files this project does not have.
-9. **`tools/serve-check.mjs` boots the real server** on a spare port, fetches
-   every `src`/`href` in `index.html` and the whole import graph reachable from
-   `js/app.js` (27 modules, relative specifiers only), checks COOP/COEP, ETag
-   revalidation, `HEAD`, byte ranges and `.wasm`/`.mjs` content types - and
-   writes a marker file one level *above* the repo to prove `/%2e%2e/`-style
-   tricks cannot read it. The server once answered `/` with a 404 because its
-   root was resolved from `import.meta.url` one directory too high; that is what
-   this check exists to keep from coming back.
+**The data.** `node --check` on all 39 modules. Every model's `tpl`, `pad` and
+`skins` reference resolves, and `buildShell` renders all 61 shells with a sane
+screen box. Every pad id a system advertises exists in `layouts.js` (and 77 of
+the 78 layouts are used), no widget escapes its field, button `ejs` indexes are
+inside the core's table, every key entry is a real `KeyboardEvent.code`, every
+`controlScheme` name is one EmulatorJS accepts, and no deck is left holding a
+core named `auto` it cannot resolve. Skins supply all 22 CSS variables in
+parseable colours. `js/data/games.generated.js` is byte-for-byte re-derivable
+from `data/source/games.tsv` plus `homebrew/`, with unique ids and correct
+per-system tallies.
+
+**The app.** The six built-in games are simulated frame by frame in
+`tools/sim.mjs` (300 frames on a cycling input profile, 900 sprinting: input,
+scoring, level flow, game-over, storage writes). Every module imports under the
+DOM shim, so a missing named export cannot survive a commit.
+`tools/dom-smoke.mjs` then boots the *whole* app headlessly: it imports
+`js/app.js`, visits every route, mounts each built-in, imports a fake Game Boy
+image into the vault, attaches it to a catalogue entry, opens the game sheet,
+presses a pad button, saves a state through the real toolbar, captures a key
+into the keyboard map and leaves the player - asserting that every view produced
+markup instead of throwing.
+
+**The runtime.** `tools/test-vendor.mjs` runs the EmulatorJS mirror against a
+fake CDN on a loopback port and requires byte-identical files, a sane manifest,
+tolerated optional 404s, an idempotent re-run and a hard failure for a dead
+mirror. `tools/test-sw.mjs` executes `sw.js` against stubs and checks what it
+intercepts: the game index and the app's modules get cached, a `blob:` ROM url
+and any `Range` request are left alone, `.wasm` payloads stay in the core's own
+IndexedDB, and a cold offline navigation still opens the app.
+`tools/serve-check.mjs` speaks real HTTP to a real server - every `src`/`href`
+in `index.html`, all 27 modules reachable from `js/app.js`, COOP/COEP, ETag
+revalidation, `HEAD`, byte ranges, module and WASM content types - and writes a
+marker file one level *above* the repo to prove `/%2e%2e/` tricks cannot read
+it. (The server once answered `/` with a 404 because its root was resolved one
+directory too high, which also made everything in that parent readable; that is
+the bug this check exists for.)
+
+**The repo.** Nothing in any document links to a game file this project does not
+have; every id `js/` looks up exists in `index.html`; every file the manifest and
+the service worker name is on disk; `css-audit` fails on a class the JS renders
+with no rule, or a `var()` with neither a definition nor a fallback; and the 26
+`homebrew/` folders exist with their generated READMEs.
 
 ## Layout
 

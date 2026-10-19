@@ -15,7 +15,9 @@
     "vendor:serve": "node server.mjs --port 4173 --threads",
     "audit": "node tools/css-audit.mjs",
     "test:fast": "node tools/test.mjs --fast",
-    "serve:check": "node tools/serve-check.mjs"
+    "serve:check": "node tools/serve-check.mjs",
+    "imports": "node tools/check-imports.mjs",
+    "test:sw": "node tools/test-sw.mjs"
   },
   "engines": {
     "node": ">=18"

@@ -148,10 +148,24 @@ is the limit, not the page.
 
 ## Offline
 
-Install the page to a home screen. The service worker caches the app shell and
-every file it has fetched from the runtime, so after you have played once, the
-game plays with the radio off. To make the *first* run work offline too, mirror
-the payload:
+Install the page to a home screen. Then three caches are at work, and it is
+worth knowing which one does what:
+
+- the **service worker** keeps the app itself - every module, stylesheet, icon,
+  the generated catalogue, your `homebrew/` images - and the small runtime
+  scripts (`loader.js`, `version.json`, the per-core `.js` wrappers);
+- the **emulator** keeps the actual `.wasm` cores and their `.data` files in
+  IndexedDB, which is why the worker deliberately refuses to copy a core:
+  `Settings ▸ Emulator ▸ Keep cores in browser storage` is the switch that
+  matters for them, and it is on by default;
+- the **browser's** HTTP cache covers whatever both of them skipped, including
+  every `Range` request a disc image needs.
+
+After you have booted a game once, it boots again with the radio off.
+`Settings ▸ Emulator ▸ Warm the core cache` fetches the loader files for all 26
+decks up front (the list is derived from what each deck would actually request,
+so it cannot drift). To make even the *first* run work offline, mirror the
+payload:
 
 ```sh
 npm run vendor

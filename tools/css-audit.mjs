@@ -7,6 +7,9 @@
  * explicitly listed as a DOM-only marker). Run directly for a report, or via
  * `npm test`, which fails the build on real gaps.
  *
+ * It also checks custom properties: a var() with no definition and no fallback
+ * is dropped by the browser in silence, so that is part of the report too.
+ *
  *   node tools/css-audit.mjs [--json]
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -157,9 +160,34 @@ for (const [cls, why] of dynamic) {
   missing.push({ cls, where: [why] });
 }
 
+/* ------------------------------------------------------- custom properties */
+/**
+ * A var() that nothing ever defines does not fail: the browser drops the whole
+ * declaration. That is how `background: var(--bg2)` (the token is --bg-2) left
+ * every code chip and settings control transparent, and how a skin variable can
+ * sit unused by choice or by accident. So: every var() either has a fallback or
+ * is defined by the CSS, by skinVars(), or as a literal in the app.
+ */
+const cssText = cssFiles.map((f) => readFileSync(f, "utf8")).join("\n");
+const declaredInCss = new Set([...cssText.matchAll(/(--[A-Za-z0-9_-]+)\s*:/g)].map((m) => m[1]));
+const { CSS_VAR_KEYS } = await import("../js/data/skins.js");
+for (const k of CSS_VAR_KEYS) declaredInCss.add(`--${k}`); // skinVars() sets these at runtime
+const setFromJs = new Set();
+for (const f of [...files, html]) {
+  for (const m of readFileSync(f, "utf8").matchAll(/["'`](--[A-Za-z0-9_-]+)["'`]|\b(--[A-Za-z0-9_-]+)\s*:/g)) {
+    setFromJs.add(m[1] || m[2]);
+  }
+}
+const deadVars = new Map();
+for (const m of cssText.matchAll(/var\(\s*(--[A-Za-z0-9_-]+)(\s*,)?/g)) {
+  const [, name, hasFallback] = m;
+  if (declaredInCss.has(name) || setFromJs.has(name) || hasFallback) continue;
+  deadVars.set(name, (deadVars.get(name) || 0) + 1);
+}
+
 if (process.argv.includes("--json")) {
-  console.log(JSON.stringify({ used: used.size, defined: defined.size, missing, unusedCss: definedUnused }, null, 2));
-  process.exit(missing.length ? 1 : 0);
+  console.log(JSON.stringify({ used: used.size, defined: defined.size, missing, unusedCss: definedUnused, deadVars: [...deadVars.keys()], vars: { declared: declaredInCss.size, setFromJs: setFromJs.size } }, null, 2));
+  process.exit(missing.length || deadVars.size ? 1 : 0);
 }
 
 console.log(`classes used: ${used.size}   defined in css: ${defined.size}   css files: ${cssFiles.length}`);
@@ -173,4 +201,10 @@ if (definedUnused.length) {
   console.log(`\n${definedUnused.length} CSS class(es) nothing renders (fine if intentional, worth a look):`);
   console.log("  " + definedUnused.slice(0, 40).join(", "));
 }
-process.exit(missing.length ? 1 : 0);
+if (deadVars.size) {
+  console.log(`\n${deadVars.size} var(s) the CSS reads with no fallback and nothing that defines them:`);
+  for (const [name, n] of deadVars) console.log(`  ${name.padEnd(18)} used ${n}x  -> the declaration is dropped`);
+} else {
+  console.log(`every var() is defined or has a fallback (${declaredInCss.size} declared, ${setFromJs.size} set from JS)`);
+}
+process.exit(missing.length || deadVars.size ? 1 : 0);

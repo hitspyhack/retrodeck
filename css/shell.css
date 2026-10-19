@@ -36,8 +36,11 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(118deg, #ffffff12 0 22%, #ffffff04 22% 46%, #0000 46%);
-  opacity: var(--glass-strength, 0.5);
+  /* the skin's own glass tint (--glass, all 50 skins set one) under a fixed
+     sheen; the deck's raw-pixels switch kills the whole overlay */
+  background:
+    linear-gradient(118deg, #ffffff12 0 22%, #ffffff04 22% 46%, #0000 46%),
+    var(--glass, transparent);
 }
 .shell[data-glass="off"] .shell__screen::after { opacity: 0; }
 
