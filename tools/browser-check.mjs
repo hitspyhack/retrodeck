@@ -157,6 +157,50 @@ async function main() {
   const held = await page.evaluate(() => Object.values(localStorage).join("|"));
   say(Boolean(changed) && new RegExp(String(changed).split(" ")[0], "i").test(held), "a setting chosen in the browser survives a reload", JSON.stringify(String(changed)));
 
+  /* ------------------------------------- 4b. the install row reflects the browser */
+  const install = await page.evaluate(() => {
+    const sec = [...document.querySelectorAll("#view section")].find((x) => /Install & updates/.test(x.textContent || ""));
+    const txt = (sec?.textContent || "").replace(/\s+/g, " ").trim();
+    return {
+      has: !!sec,
+      rows: sec ? sec.querySelectorAll(".row").length : 0,
+      prompt: /Install RetroDeck/.test(txt),
+      howto: /Add to Home Screen/.test(txt),
+      copy: /offline copy active/.test(txt),
+      worker: !!navigator.serviceWorker?.controller,
+      check: /Check now/.test(txt),
+    };
+  });
+  say(install.has && install.rows >= 2 && install.check, "Settings carries an install & updates block", `${install.rows} rows, "check now" ${install.check}`);
+  // Either the browser handed the page a real prompt, or it did not: the section
+  // must show the button XOR the instructions, never both and never neither.
+  say(install.prompt !== install.howto, "and picks exactly one branch, the one this browser deserves", `prompt offered: ${install.prompt}`);
+  say(install.copy === install.worker, "the offline-copy status is the truth about the worker", `controller=${install.worker} label=${install.copy ? "active" : "silent"}`);
+
+  /* ------------------------- 4c. "ask before leaving" is a browser-level prompt */
+  const flip = page.locator("label.row--switch", { hasText: "Ask before leaving a running game" });
+  // click the label, not the input: the checkbox underneath is styled away and
+  // Playwright will not click a hidden control, while the label is what a user hits
+  await flip.click();
+  await sleep(400);
+  const armed = await flip.locator("input").isChecked().catch(() => false);
+  await page.goto(`${ORIGIN}/#/play/builtin:chomp`, { waitUntil: "domcontentloaded" });
+  await page.waitForSelector("canvas#game", { timeout: 20000 }).catch(() => {});
+  await sleep(900);
+  const asked = page.waitForEvent("dialog", { timeout: 8000 }).catch(() => null);
+  const reloading = page.reload({ waitUntil: "domcontentloaded" }).catch(() => {});
+  const dlg = await asked;
+  if (dlg) await dlg.dismiss().catch(() => {}); // dismissing is what keeps the page
+  await Promise.race([reloading, sleep(1500)]);
+  say(armed && Boolean(dlg), "the exit warning stops a browser reload, not just the in-app quit", dlg ? `dialog type ${dlg.type()}` : "the reload went through unanswered");
+  // back to settings before un-arming: the dismissed dialog cancelled the reload,
+  // so the page is still the player and the switch is not in the document
+  await page.goto(`${ORIGIN}/#/settings`, { waitUntil: "domcontentloaded" });
+  await sleep(600);
+  await flip.click().catch(() => {});
+  await sleep(400);
+  say((await flip.locator("input").isChecked().catch(() => true)) === false, "and the switch is two-way (turned back off for the rest of the run)");
+
     /* ---------------------------------------------------------- 5.. offline */
   await ctx.setOffline(true);
   await page.goto(`${ORIGIN}/`, { waitUntil: "domcontentloaded" }).catch(() => {});

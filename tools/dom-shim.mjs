@@ -400,27 +400,21 @@ export function installDom() {
   win.window = win;
   win.self = win;
   win.globalThis = win;
-  Object.assign(globalThis, win);
-  globalThis.window = win;
-  globalThis.document = doc;
-  globalThis.navigator = win.navigator;
-  globalThis.location = win.location;
-  globalThis.localStorage = win.localStorage;
-  globalThis.HTMLElement = El;
-  globalThis.requestAnimationFrame = win.requestAnimationFrame;
-  globalThis.cancelAnimationFrame = win.cancelAnimationFrame;
-  globalThis.matchMedia = win.matchMedia;
-  globalThis.IntersectionObserver = win.IntersectionObserver;
-  globalThis.ResizeObserver = win.ResizeObserver;
-  globalThis.Event = win.Event;
-  globalThis.KeyboardEvent = win.KeyboardEvent;
-  globalThis.PointerEvent = win.PointerEvent;
-  globalThis.CustomEvent = win.CustomEvent;
-  globalThis.fetch = win.fetch;
-  globalThis.screen = win.screen;
-  globalThis.history = win.history;
-  globalThis.indexedDB = undefined;
-  globalThis.__dom = { doc, win, frames };
+  win.indexedDB = undefined; // the shim never fakes a database
+  // Node 21 and up ship a real global `navigator`, defined as a *getter only*.
+  // This file is strict-mode ESM, so `globalThis.navigator = …` throws there —
+  // which is exactly what happened on the node 22 CI matrix leg. Defining the
+  // properties instead of assigning them works for every key on every Node.
+  const install = (key, value) =>
+    Object.defineProperty(globalThis, key, {
+      value,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+  for (const [key, value] of Object.entries(win)) install(key, value);
+  install("HTMLElement", El);
+  install("__dom", { doc, win, frames });
   return win;
 }
 

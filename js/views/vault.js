@@ -3,7 +3,10 @@
  *
  * Cartridge images, BIOS images, save states and battery saves all sit in
  * IndexedDB (`retrodeck`). Nothing here talks to a network, and every list has
- * an export path so the data can leave as easily as it arrived.
+ * an export path. Import is deliberately absent for saves: the runtime that
+ * wrote them exposes no way to hand them back (see the notice in savesSection),
+ * and a button that only moved bytes into a store nothing reads would be worse
+ * than no button.
  */
 import { store, fmtBytes, fmtDate } from "../core/store.js";
 import { vault } from "../core/idb.js";
@@ -122,7 +125,7 @@ export async function renderVault(root, ctx) {
             if (!rec?.bytes) return toast("The bytes are gone from this browser", "bad");
             download(rec.fileName || `${r.name || "rom"}.bin`, new Blob([rec.bytes], { type: "application/octet-stream" }));
           },
-        }, "Save"),
+        }, "Export"),
         h("button.btn.btn--sm.btn--danger", {
           onclick: async () => {
             const ok = await confirmSheet("Delete this cartridge?", `${r.fileName || r.name} (${fmtBytes(r.size)}) will be removed from this browser. Save states stay unless you delete them below.`, "Delete");
@@ -199,7 +202,7 @@ export async function renderVault(root, ctx) {
           ref ? h("button.btn.btn--sm.btn--primary", { onclick: () => (location.hash = `#/play/${ref}`) }, "Resume") : null,
           h("button.btn.btn--sm.btn--ghost", {
             onclick: () => download(`${(st.title || st.gameId).replace(/[^\w.-]+/g, "_")}.state`, new Blob([st.bytes])),
-          }, "Save"),
+          }, "Export"),
           h("button.btn.btn--sm.btn--danger", {
             onclick: async () => { await vault.deleteState(st.gameId, st.slot); toast("State deleted", "good"); reload(); },
           }, "✕"))));
@@ -212,13 +215,18 @@ export async function renderVault(root, ctx) {
         h("div", { style: { display: "flex", gap: "6px" } },
           h("button.btn.btn--sm.btn--ghost", {
             onclick: () => download(`${(sv.name || sv.gameId).replace(/[^\w.-]+/g, "_")}.sav`, new Blob([sv.bytes])),
-          }, "Save"),
+          }, "Export"),
           h("button.btn.btn--sm.btn--danger", {
             onclick: async () => { await vault.deleteSram(sv.gameId); toast("Battery save deleted", "good"); reload(); },
           }, "✕"))));
     }
     return h("section", {},
       sectionTitle("Save states & battery saves", h("span.small.mono.muted", {}, `${state.states.length} + ${state.sram.length}`)),
+      h("div.notice", {}, h("span", {},
+        "Out, not back in. These are the core's own bytes - battery RAM and a snapshot it wrote for itself - and EmulatorJS 4.2.3 reads them only from its own storage, so exporting is a backup for the day the browser evicts this site, not a way to move progress sideways. ",
+        h("code", {}, "EJS_loadStateURL"),
+        " is forwarded by ", h("code", {}, "loader.js"), " and never read by ", h("code", {}, "emulator.min.js"),
+        ". The cartridge images above are different: those you can bring back in, and do.")),
       rows.length ? h("div.list", {}, ...rows) : h("div.notice", {}, h("span", {}, "No saved snapshots yet. The player toolbar writes them (10 slots), and battery saves are picked up automatically from the core.")));
   }
 

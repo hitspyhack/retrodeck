@@ -74,9 +74,12 @@ entry that plays with no import step and works offline. [docs/ADDING-GAMES.md](d
 
 ## On a phone
 
-`manifest.webmanifest` + a service worker make it installable. On Android
-(Chrome) use the browser menu → *Install app*; on iOS (Safari) use *Share → Add
-to Home Screen*. After the first load the interface works with the radio off —
+`manifest.webmanifest` + a service worker make it installable, and
+*Settings ▸ Install & updates* is the honest version of that: a real *Install
+RetroDeck* button appears only when the browser has handed the page an install
+prompt, the manual routes (Chrome ⋮ → *Install app*, Safari Share → *Add to Home
+Screen*) are shown when it has not, and *Reload now* appears only while a new
+build is genuinely waiting. After the first load the interface works with the radio off —
 only the emulator payload needs to have been cached or vendored (see below).
 The player is built for thumbs first: the pad floats over the picture, the
 screen keeps its hardware aspect ratio, double-tap opens the core's own menu,
@@ -168,7 +171,7 @@ museum kiosk or a plane.
 ## Tests
 
 ```sh
-npm test            # 22 checks, ~7 s, no dependencies
+npm test            # 24 checks, ~7 s, no dependencies
 npm run test:fast   # the static ones only
 npm run test:sw     # sw.js against stubs, nothing else can reach it
 npm run imports     # every module in js/, imported under the DOM shim
@@ -183,14 +186,16 @@ drift - and no browser in this sandbox either, so every one of them runs in node
 ![the library on a phone](docs/img/library.png)
 
 **The browser.** `npm run test:browser` boots the real app in headless chromium and
-asserts what no node test can: that the isolation headers make `SharedArrayBuffer`
-exist, that a built-in game paints (the canvas is sampled, twice), that offline
-serves the shell from the service-worker cache, that importing a file detects its
-console and mounts a core, and that every deck's core name is one the runtime
-actually publishes. It is opt-in because it needs a browser binary - `npm test`
-stays installable with no network. CI runs it as its own job.
+asserts 26 things no node test can: that the isolation headers make
+`SharedArrayBuffer` exist, that a built-in game paints (the canvas is sampled,
+twice), that offline serves the shell from the service-worker cache, that
+importing a file opens a real file chooser, detects its console and mounts a
+core, that the install row in Settings matches what the browser actually offered,
+and that "ask before leaving a running game" raises a *browser* dialog on reload -
+not only the in-app sheet. It is opt-in because it needs a browser binary -
+`npm test` stays installable with no network. CI runs it as its own job.
 
-**The data.** `node --check` on all 46 modules (app, tools, server). Every model's `tpl`, `pad` and
+**The data.** `node --check` on all 47 modules (app, tools, server). Every model's `tpl`, `pad` and
 `skins` reference resolves, and `buildShell` renders all 61 shells with a sane
 screen box. Every pad id a system advertises exists in `layouts.js` (and 77 of
 the 78 layouts are used), no widget escapes its field, button `ejs` indexes are
@@ -254,9 +259,12 @@ server.mjs            static server: wasm/mjs types, ETag, ranges, COOP/COEP
 tools/                build, test, sim, css audit, icons, vendor mirror, runtime
                       snapshot refresh, import check, service-worker/server checks
 docs/DEPLOYING.md     dist/, four hosts, the two headers that matter, offline mirror
+docs/PLAYING.md       imports, controls, saves (and why they are one-way), slow, offline
+CONTRIBUTING.md       where each kind of change goes, and the two rules the repo learned
+CHANGELOG.md          what shipped, what was fixed, what a deployment has to do
 covers/<system>/      drop box art here (or per game from the app) - see covers/README.md
 homebrew/<system>/    drop freely-licensed files here, then npm run build
-docs/                 PLAYING.md, ADDING-GAMES.md
+docs/img/             the screenshots above, taken by the browser check itself
 ```
 
 ## Browsers

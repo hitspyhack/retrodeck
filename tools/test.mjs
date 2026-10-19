@@ -239,6 +239,49 @@ check("every EJS_* option the app sets is one the runtime forwards", () => {
   return `${assignments} assignments, all in the ${forwarded.size} keys loader.js forwards`;
 });
 
+check("the install UI only shows what the browser really offered", () => {
+  // Every row in Settings ▸ Install & updates is a claim about browser state, so
+  // the wiring is checked here rather than in a browser: the prompt has to be
+  // captured *and* prevented, the worker has to answer skip-waiting, and neither
+  // button may render off a guess.
+  const pwa = read(join("js", "core", "pwa.js"));
+  const app = read(join("js", "app.js"));
+  const set = read(join("js", "views", "settings.js"));
+  const sw = read("sw.js");
+  const claims = [
+    ['the install event is listened for', pwa.includes('addEventListener("beforeinstallprompt"')],
+    ["and preventDefault()ed, or the browser keeps the offer to itself", pwa.includes("e.preventDefault()")],
+    ["the waiting worker is told to take over", pwa.includes('type: "skip-waiting"')],
+    ["sw.js answers it", /e\.data\?\.type === "skip-waiting"/.test(sw)],
+    ["app.js hands the registration over", app.includes("trackRegistration(")],
+    ["app.js still registers it", app.includes('navigator.serviceWorker.register')],
+    ["Install is behind a real canPrompt check", /if \(s\.canPrompt\)[\s\S]{0,400}Install RetroDeck/.test(set)],
+    ["browsers that never prompt get instructions instead", /!s\.standalone[\s\S]{0,600}Add to Home Screen/.test(set)],
+    ["Reload is behind a real waiting-worker check", /s\.waiting\s*\?[\s\S]{0,160}Reload now/.test(set)],
+  ];
+  const broken = claims.filter(([, ok]) => !ok).map(([what]) => what);
+  if (broken.length) throw new Error(broken.join("\n"));
+  return `${claims.length} claims, all wired to live browser state`;
+});
+
+check("no view promises to put a save back into a core", () => {
+  // EmulatorJS 4.2.3 has no save-import API: EJS_loadStateURL is forwarded by
+  // loader.js and never read by emulator.min.js. So the only code allowed to
+  // write save records is the mirror that reads them out of the core - a view
+  // that wrote one would look like a restore while doing nothing.
+  const writers = [];
+  for (const rel of jsFiles()) {
+    if (!/(^|[\\/])views([\\/]|$)/.test(rel)) continue;
+    if (read(rel).includes("saveSram(")) writers.push(rel);
+  }
+  if (writers.length) throw new Error(`these views write save records no core reads back:\n  ${writers.join("\n  ")}`);
+  const vault = read(join("js", "views", "vault.js"));
+  if (!/Out, not back in/.test(vault)) throw new Error("the vault no longer says that saves export but cannot be imported");
+  const labels = (vault.match(/"Export"/g) || []).length;
+  if (labels !== 3) throw new Error(`expected three export controls in the vault, found ${labels}`);
+  return "3 export controls, 0 fake restores";
+});
+
 check("a deploy folder can be built and contains what the app requests", () => {
   const out = spawn("tools/make-dist.mjs");
   const check2 = spawn("tools/make-dist.mjs", ["--check"]);

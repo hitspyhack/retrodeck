@@ -10,6 +10,7 @@ import { SYSTEMS, SYSTEM_BY_ID } from "../data/systems.js";
 import { PADS } from "../data/layouts.js";
 import { vault } from "../core/idb.js";
 import { probeEmulator, localVendorPresent, dataBase, CDN_VERSIONS } from "../core/emulator.js";
+import { ensureTracked, installNow, checkForUpdate, applyUpdate } from "../core/pwa.js";
 import { h, mount, toggle, range, select, sectionTitle, toast, sheet, pickFiles, confirmSheet, copyText, download } from "../ui.js";
 import { keyGrid } from "./config.js";
 import { INDEX_META, BUILTINS, sysName } from "./parts.js";
@@ -29,6 +30,7 @@ export async function renderSettings(root, ctx) {
       h("p.muted.small", {}, `${INDEX_META.count} indexed titles · ${SYSTEMS.length} systems · ${BUILTINS.length} built-in games. ` +
         "Stored in localStorage under ", h("code", {}, "retrodeck.v1"), "; game files live in IndexedDB.")),
     runtimeSection(),
+    await installSection(),
     block("Look",
       sel("ui.theme", "Theme", [["midnight", "Midnight"], ["light", "Daylight"], ["high-contrast", "High contrast"]]),
       sel("ui.density", "Density", [["cozy", "Cozy"], ["compact", "Compact"]]),
@@ -102,6 +104,79 @@ export async function renderSettings(root, ctx) {
   }
   function block(title, ...rows) {
     return h("section", {}, sectionTitle(title), h("div.rows", {}, ...rows));
+  }
+
+  /**
+   * Install and update state, read from the browser every render: the install
+   * button only exists when the browser has actually handed over a
+   * `beforeinstallprompt`, and "reload" only exists when a worker is really
+   * waiting. When neither is true the row explains the manual route instead of
+   * showing a control that would do nothing.
+   */
+  async function installSection() {
+    const s = await ensureTracked();
+    const rows = [
+      h("div.row", {},
+        h("span.row__label", {}, "Running as",
+          h("small.muted", {}, s.standalone
+            ? "an installed app - its own window, no address bar"
+            : "a page in a browser tab")),
+        h("b.mono.small", {}, !s.secure ? "not a secure origin" : s.sw ? (s.waiting ? "update waiting" : "offline copy active") : "no service worker")),
+    ];
+    if (s.canPrompt) {
+      rows.push(h("div.row", {},
+        h("span.row__label", {}, "Install", h("small.muted", {}, "keeps the whole shelf offline and opens it fullscreen")),
+        h("button.btn.btn--sm.btn--primary", { onclick: askInstall }, "Install RetroDeck")));
+    } else if (!s.standalone) {
+      rows.push(h("div.notice", {}, h("span", {},
+        s.secure
+          ? "This browser has not offered an install prompt, so there is no button to press. Add it by hand: iOS Safari ▸ Share ▸ Add to Home Screen · Android Chrome ▸ ⋮ ▸ Add to Home screen · desktop Chrome ▸ the install icon at the right end of the address bar. The offer usually appears after a second visit, once the offline copy has been cached."
+          : "Install needs a secure origin: a page opened from disk (file://) or plain http cannot register a service worker, so nothing here can be cached. Serve the folder over https or localhost and reload.")));
+    }
+    rows.push(h("div.row", {},
+      h("span.row__label", {}, "New build",
+        h("small.muted", {}, s.waiting
+          ? "downloaded and parked - this tab keeps running the build it started with"
+          : "the offline copy is refreshed on load, and a new build waits for you rather than swapping mid-play")),
+      h("div", { style: { display: "flex", gap: "6px" } },
+        s.waiting ? h("button.btn.btn--sm.btn--primary", { onclick: reloadInto } , "Reload now") : null,
+        h("button.btn.btn--sm.btn--ghost", { onclick: checkUpdate }, "Check now"))));
+    return h("section", {}, sectionTitle("Install & updates"), h("div.rows", {}, ...rows));
+  }
+
+  async function askInstall() {
+    const outcome = await installNow();
+    toast(
+      outcome === "accepted"
+        ? "Added - RetroDeck is on your home screen or app list"
+        : outcome === "dismissed"
+          ? "Install dismissed - the browser menu can still offer it"
+          : "The browser did not hand out a prompt, so use its own menu (⋮ or Share)",
+      outcome === "accepted" ? "good" : "info",
+      5000,
+    );
+    render();
+  }
+  async function checkUpdate() {
+    const r = await checkForUpdate();
+    toast(
+      r === "ready"
+        ? "New build downloaded - reload to use it"
+        : r === "current"
+          ? "Nothing newer - this is the build the host is serving"
+          : r === "unreachable"
+            ? "The host did not answer, so nothing could be checked"
+            : "No service worker to update (opened from disk, or not a secure origin)",
+      r === "current" ? "good" : "info",
+      5200,
+    );
+    render();
+  }
+  async function reloadInto() {
+    if (!(await applyUpdate())) {
+      toast("That build went away before it could take over", "warn");
+      render();
+    }
   }
 
   /* ------------------------------------------------------------- runtime */

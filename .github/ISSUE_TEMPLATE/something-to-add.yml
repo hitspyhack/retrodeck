@@ -1,0 +1,35 @@
+name: New console, shell, skin or game
+description: The four data-only additions this project is built for.
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of addition
+      options: [a console/handheld, a shell (model) for an existing console, a skin/faceplate, a button layout, a playable built-in game, a catalogue entry]
+    validations: { required: true }
+  - type: textarea
+    id: detail
+    attributes:
+      label: The details
+      description: |
+        For a console, which cores the EmulatorJS runtime really publishes for it
+        (see `data/source/emulatorjs.json` — a name not in there will 404). For a
+        built-in game, what the controls are on a phone.
+    validations: { required: true }
+  - type: textarea
+    id: files
+    attributes:
+      label: Which files you already touched
+      description: "`js/data/systems.js`, `models.js`, `skins.js`, `layouts.js`, `js/games/` … paste a diff or say \"none yet\"."
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you send it
+      options:
+        - label: "`npm test` passes"
+          required: true
+        - label: "any new `EJS_*` option was checked against the shipped `loader.js` / `emulator.min.js`, not the docs page"
+          required: true
+        - label: "no commercial ROM, BIOS or ISO is attached or linked"
+          required: true

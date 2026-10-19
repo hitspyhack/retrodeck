@@ -11,6 +11,7 @@ import { MODEL_BY_ID, MODELS_BY_SYSTEM, defaultModelFor } from "./data/models.js
 import { skinVars } from "./data/skins.js";
 import { GAMES as BUILTINS } from "./games/index.js";
 import { probeEmulator, localVendorPresent } from "./core/emulator.js";
+import { initPwa, trackRegistration, onUpdateReady } from "./core/pwa.js";
 import { loadArt } from "./views/parts.js";
 import { h, mount, toast, keepScreenOn, clear } from "./ui.js";
 import { renderHome } from "./views/home.js";
@@ -290,17 +291,14 @@ async function boot() {
   checkRuntime();
   setInterval(checkRuntime, 5 * 60 * 1000);
 
+  initPwa();
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     try {
       const reg = await navigator.serviceWorker.register("./sw.js", { scope: "./" });
-      reg.addEventListener("updatefound", () => {
-        const sw = reg.installing;
-        sw?.addEventListener("statechange", () => {
-          if (sw.state === "installed" && navigator.serviceWorker.controller) {
-            toast("RetroDeck updated - reload for the new build", "info", 6000);
-          }
-        });
-      });
+      // pwa.js owns the install/update state so Settings can show it too; the
+      // toast is the *only* automatic thing - the reload stays the user's call.
+      trackRegistration(reg);
+      onUpdateReady(() => toast("A new build is waiting - Settings ▸ Install & updates ▸ Reload now", "info", 9000));
     } catch (err) {
       console.warn("[retrodeck] service worker not registered:", err?.message || err);
     }

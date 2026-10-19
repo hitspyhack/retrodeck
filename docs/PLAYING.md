@@ -107,10 +107,16 @@ of pretending to be a key.
 | --- | --- | --- |
 | Save state | 💾 / F2, ten slots | `states` store, with a screenshot |
 | Load state | ⤓ / F4, or `#/play/…?slot=3` to boot straight into one | — |
-| Battery save (SRAM) | the core's own save, plus on quit | `sram` store, restored on next boot |
+| Battery save (SRAM) | the core's own save, plus on quit | `sram` store - a *mirror*; the core boots from its own IndexedDB copy |
 | Screenshot | 📷 | your downloads, and a thumbnail in the states sheet |
 | Settings | every change | `localStorage`, key `retrodeck.v1` |
 | Everything, as text | Settings ▸ Your data ▸ Export | one JSON file you can keep anywhere |
+
+Export goes one way, and that is the honest shape of it: the runtime has no API
+to take a `.sav` or a `.state` back from a page (its loader forwards
+`EJS_loadStateURL`, and `emulator.min.js` 4.2.3 never reads it), so a "restore"
+button here would move bytes into a store nothing looks at. Keep the exports as
+backups; the game's own storage is what it boots from.
 
 States and saves are per *game id*, so a rom you re-import and re-attach keeps
 its saves. **Cartridges ▸ Save states** lists them with sizes and dates, with a
@@ -155,8 +161,14 @@ somebody else, and hot-linking it would break the offline promise. See
 
 - Turn rewind off (0 frames) and shader to `none`: both are per-frame costs.
 - Fast-forward at 1.5× instead of 3×; some cores do not survive 4×.
-- Pick a lighter core in the deck's config (e.g. `vba_next` over `mgba` for GBA
-  when you do not need link).
+- Try the other core for that shelf (`Settings ▸ Hardware ▸ <deck> ▸ Defaults`
+  lists only cores the published runtime really has - NES, for instance, offers
+  both `nestopia` and `fceumm`). Anything not on that list does not exist in the
+  runtime and will 404.
+- Leave `Settings ▸ Emulator ▸ Shared WASM memory / threads` off unless the host
+  sends `Cross-Origin-Opener-Policy` + `Cross-Origin-Embedder-Policy`: without
+  them a threaded core cannot start at all, and `docs/DEPLOYING.md` says which
+  hosts can send them (GitHub Pages cannot, which is why the default is off).
 - Close the shell art (the ⛶ theatre button) — SVG over a big canvas is not free
   on older phones.
 - Use `npm run vendor:serve`, so the cores come from the same origin and are not
@@ -166,6 +178,26 @@ The FPS line in the corner (top-right of the stage) is RetroDeck's own frame
 counter, not the emulated one — if it reads 60 and the game looks slow, the core
 is the limit, not the page.
 
+## Install & updates
+
+`Settings ▸ Install & updates` is the whole story of the PWA layer, and every row
+there reads live state rather than assuming:
+
+| Row | What it means |
+| --- | --- |
+| Running as | `installed app` when the browser opened it standalone, `page in a tab` otherwise |
+| Install | only appears when the browser handed the page a `beforeinstallprompt`; the dialog is the browser's own, so accepting is not guaranteed and "dismissed" is a normal answer |
+| the notice under it | iOS never fires that event, so the row says "by hand" and gives the three routes: Safari ▸ Share ▸ Add to Home Screen, Chrome on Android ▸ ⋮ ▸ Add to Home screen, desktop Chrome ▸ the install icon in the address bar |
+| New build ▸ Check now | asks the service worker to re-fetch the shell; `ready` means a build is downloaded and parked |
+| Reload now | only shown while a worker is *waiting*: the new build will not disturb the game you are in until you agree |
+
+Two consequences worth knowing. A first install needs an `https` (or `localhost`)
+origin - a folder opened from `file://` cannot register a worker, and the row
+says so instead of pretending. And `Settings ▸ Emulator ▸ Ask before leaving a
+running game` is now a real browser prompt: while a game is live the page answers
+`beforeunload`, so closing the tab asks "Leave site?" instead of silently killing
+the run.
+
 ## Offline
 
 Install the page to a home screen. Then three caches are at work, and it is
@@ -173,7 +205,9 @@ worth knowing which one does what:
 
 - the **service worker** keeps the app itself - every module, stylesheet, icon,
   the generated catalogue, your `homebrew/` images - and the small runtime
-  scripts (`loader.js`, `version.json`, the per-core `.js` wrappers);
+  scripts (`loader.js`, `emulator.min.js`, `emulator.min.css`, `version.json`,
+  `cores/cores.json` - that is the whole `data/` root; there is no per-core
+  `.js` in 4.2.3);
 - the **emulator** keeps the actual `.wasm` cores and their `.data` files in
   IndexedDB, which is why the worker deliberately refuses to copy a core:
   `Settings ▸ Emulator ▸ Keep cores in browser storage` is the switch that

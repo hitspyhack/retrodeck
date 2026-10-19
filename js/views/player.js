@@ -233,6 +233,7 @@ export class PlayerView {
         onEvent: (n, p) => this.onBuiltEvent(n, p),
       });
       this.host.start();
+      this.armExitGuard();
       load?.remove();
       if (query?.slot) toast("Built-in titles store their best score in this browser; slot states apply to cartridge games", "info", 4200);
       return;
@@ -287,7 +288,10 @@ export class PlayerView {
       case "ready":
       case "started":
         load?.remove();
-        if (ev.type === "started") this.flash("READY");
+        if (ev.type === "started") {
+          this.flash("READY");
+          this.armExitGuard();
+        }
         break;
       case "state-saved":
         this.flash(`STATE ${ev.slot}`);
@@ -573,6 +577,30 @@ export class PlayerView {
     }
   }
 
+  /**
+   * `quit()` can ask, but closing a tab or swiping the app away runs none of
+   * our code - so while a game is live the question goes to the browser
+   * instead. The setting is re-read when the event fires, which is what makes
+   * Settings ▸ Playing ▸ "Ask before leaving a running game" work mid-run
+   * without needing to restart the game.
+   */
+  armExitGuard() {
+    if (this._exitGuard) return;
+    this._exitGuard = (e) => {
+      if (!store.get("emulator.exitConfirm", false)) return undefined;
+      e.preventDefault();
+      // Chrome only shows its own prompt when the event is treated as answered.
+      e.returnValue = "";
+      return "";
+    };
+    addEventListener("beforeunload", this._exitGuard);
+  }
+  disarmExitGuard() {
+    if (!this._exitGuard) return;
+    removeEventListener("beforeunload", this._exitGuard);
+    this._exitGuard = null;
+  }
+
   async quit() {
     if (store.get("emulator.exitConfirm", false) || (this.cfg.confirmExit && !this.built)) {
       const ok = await confirmSheet("Leave the game?", "Anything unsaved stays as it is - the core is torn down when you go back.", "Leave");
@@ -583,6 +611,7 @@ export class PlayerView {
 
   stopAll() {
     this.alive = false;
+    this.disarmExitGuard();
     for (const fn of this._cleanup) {
       try { fn(); } catch { /* already gone */ }
     }

@@ -1,0 +1,47 @@
+name: Bug report
+description: Something in the app does not do what the interface promises.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please try `npm test` on a checkout first — it catches most regressions
+        in a second, and if it fails here that *is* the bug report.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect
+      description: One paragraph. "The spinner stayed for 25s" beats "the emulator is broken".
+    validations: { required: true }
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which surface
+      options: [a built-in game, a cartridge / EmulatorJS core, the vault (files, saves), settings, home / library, install / offline, the deploy (headers, dist)]
+    validations: { required: true }
+  - type: input
+    id: console
+    attributes:
+      label: Console / core involved
+      placeholder: "nes / fceumm — leave blank if unrelated"
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: "iPhone 12, Safari 18 · Arch, Firefox 141"
+    validations: { required: true }
+  - type: textarea
+    id: console-log
+    attributes:
+      label: Console errors
+      description: Open DevTools (or Settings ▸ Emulator ▸ Probe the runtime) and paste anything red. Screenshots are fine.
+      render: text
+  - type: checkboxes
+    id: known
+    attributes:
+      label: Things this project deliberately does not do
+      options:
+        - label: I am not asking for a ROM or BIOS to be bundled or linked
+          required: true
+        - label: I am not asking for save files to be importable into a running core (EmulatorJS 4.2.3 has no API for it — docs/PLAYING.md, "Saving, and where things are")
+          required: true

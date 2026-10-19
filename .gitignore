@@ -95,6 +95,10 @@ covers/**/*.svg
 # --- documentation that `*.md` above would otherwise hide ---
 !README.md
 !NOTICE.md
+!CHANGELOG.md
+!CONTRIBUTING.md
+!docs/**/*.md
+!security.md
 !docs/
 !docs/**
 
