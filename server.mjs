@@ -17,8 +17,9 @@
 
 import { createServer } from "node:http";
 import { createReadStream, promises as fs } from "node:fs";
-import { extname, join, normalize, resolve, sep } from "node:path";
+import { dirname, extname, join, normalize, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
 import { statSync } from "node:fs";
 
 const argv = process.argv.slice(2);
@@ -28,7 +29,10 @@ const arg = (name, fallback) => {
   return argv[i + 1] ?? true;
 };
 
-const ROOT = resolve(new URL(".", import.meta.url).pathname, "..");
+/* Serve the folder this script lives in - the repo root - unless --root says
+   otherwise. (An earlier draft sat in tools/ and walked up a level, which made
+   the whole workspace readable and the site answer 404 at "/".) */
+const ROOT = resolve(String(arg("root", dirname(fileURLToPath(import.meta.url)))));
 const PORT = Number(arg("port", process.env.PORT || 4173));
 const HOST = String(arg("host", process.env.HOST || "0.0.0.0"));
 const THREADS = argv.includes("--threads");

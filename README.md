@@ -136,9 +136,11 @@ museum kiosk or a plane.
 ## Tests
 
 ```sh
-npm test          # 16 checks, ~5 s, no dependencies
+npm test           # 17 checks, ~6 s, no dependencies
 npm run test:fast  # static checks only
-npm run audit     # which classes the JS renders vs what CSS defines
+npm run sim        # the six built-in games, 300 frames each, with fake input
+npm run serve:check# boots its own server, crawls the module graph, probes traversal
+npm run audit      # which classes the JS renders vs what CSS defines
 ```
 
 What it proves is deliberate, because a project with no build step has no
@@ -165,6 +167,14 @@ compiler to catch drift:
    real toolbar, captures a key into the keyboard map and leaves the player —
    asserting that every view produced markup instead of throwing.
 8. No document anywhere links to game files this project does not have.
+9. **`tools/serve-check.mjs` boots the real server** on a spare port, fetches
+   every `src`/`href` in `index.html` and the whole import graph reachable from
+   `js/app.js` (27 modules, relative specifiers only), checks COOP/COEP, ETag
+   revalidation, `HEAD`, byte ranges and `.wasm`/`.mjs` content types - and
+   writes a marker file one level *above* the repo to prove `/%2e%2e/`-style
+   tricks cannot read it. The server once answered `/` with a 404 because its
+   root was resolved from `import.meta.url` one directory too high; that is what
+   this check exists to keep from coming back.
 
 ## Layout
 

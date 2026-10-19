@@ -331,6 +331,14 @@ if (!FAST) {
   check("the EmulatorJS vendor tool works against a local mirror", () => spawn("tools/test-vendor.mjs").split("\n").pop());
 }
 
+check("the server serves every file the app asks for (and nothing above the repo)", () => {
+  const r = spawnSync(process.execPath, [join(ROOT, "tools", "serve-check.mjs")], { encoding: "utf8", timeout: 120000 });
+  const out = (r.stdout || "") + (r.stderr || "");
+  if (r.status !== 0) throw new Error("serve-check failed:\n" + out.trim());
+  const line = out.split("\n").map((l) => l.trim()).find((l) => l.startsWith("served")) || "";
+  return line.replace(/^served /, "") || "the app is served";
+});
+
 check("homebrew drop folders exist and explain themselves", () => {
   const missing = [];
   for (const sys of SYSTEM_IDS) {

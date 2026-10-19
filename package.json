@@ -14,7 +14,8 @@
     "sim": "node tools/sim.mjs",
     "vendor:serve": "node server.mjs --port 4173 --threads",
     "audit": "node tools/css-audit.mjs",
-    "test:fast": "node tools/test.mjs --fast"
+    "test:fast": "node tools/test.mjs --fast",
+    "serve:check": "node tools/serve-check.mjs"
   },
   "engines": {
     "node": ">=18"
