@@ -55,7 +55,13 @@ games.
 
 Everything else in the library is an *index* of classic titles — the metadata,
 the year, the player count, the quirks ("battery save", "needs multi-tap",
-"6-button pads"). To play those you supply your own copy of a file you are
+"6-button pads"). Each card's cover is drawn in the browser (a deterministic
+mosaic, flat poster or cartridge label per title - `Settings ▸ Look ▸ Card
+artwork`), because this repository ships no box art and links to no image host.
+Want real images instead? Two ways, both documented in [`covers/README.md`](covers/README.md):
+**Add artwork** on a game's sheet keeps your own file in the vault (resized to
+560 px, offline forever), or drop `covers/<system>/<title-slug>.png` on the
+server and `npm run build` - the sheet prints the exact path it is looking for. To play those you supply your own copy of a file you are
 allowed to hold, and RetroDeck runs it. This project ships no game files,
 hosts none, and links to none; see [`NOTICE.md`](NOTICE.md).
 
@@ -148,7 +154,7 @@ npm run audit       # classes and CSS variables the JS renders vs what css/ defi
 Nineteen checks, because a project with no build step has no compiler to catch
 drift - and no browser in this sandbox either, so every one of them runs in node:
 
-**The data.** `node --check` on all 41 modules (app, tools, server). Every model's `tpl`, `pad` and
+**The data.** `node --check` on all 42 modules (app, tools, server). Every model's `tpl`, `pad` and
 `skins` reference resolves, and `buildShell` renders all 61 shells with a sane
 screen box. Every pad id a system advertises exists in `layouts.js` (and 77 of
 the 78 layouts are used), no widget escapes its field, button `ejs` indexes are
@@ -162,7 +168,10 @@ per-system tallies.
 **The app.** The six built-in games are simulated frame by frame in
 `tools/sim.mjs` (300 frames on a cycling input profile, 900 sprinting: input,
 scoring, level flow, game-over, storage writes). Every module imports under the
-DOM shim, so a missing named export cannot survive a commit.
+DOM shim, so a missing named export cannot survive a commit. Card artwork is
+covered too: an image picked on a game's sheet is stored in the vault, read back
+by the card and removable, a cover file the build indexed renders as a real
+`<img>`, and one that has gone stale falls back to the generated cover.
 `tools/dom-smoke.mjs` then boots the *whole* app headlessly: it imports
 `js/app.js`, visits every route, mounts each built-in, imports a fake Game Boy
 image into the vault, attaches it to a catalogue entry, opens the game sheet,
@@ -178,7 +187,7 @@ intercepts: the game index and the app's modules get cached, a `blob:` ROM url
 and any `Range` request are left alone, `.wasm` payloads stay in the core's own
 IndexedDB, and a cold offline navigation still opens the app.
 `tools/serve-check.mjs` speaks real HTTP to a real server - every `src`/`href`
-in `index.html`, all 27 modules reachable from `js/app.js`, COOP/COEP, ETag
+in `index.html`, all 28 modules reachable from `js/app.js`, COOP/COEP, ETag
 revalidation, `HEAD`, byte ranges, module and WASM content types - and writes a
 marker file one level *above* the repo to prove `/%2e%2e/` tricks cannot read
 it. (The server once answered `/` with a 404 because its root was resolved one
@@ -207,6 +216,7 @@ js/ui.js              100-line element builder, sheets, toasts, file pickers
 server.mjs            static server: wasm/mjs types, ETag, ranges, COOP/COEP
 tools/                build, test, sim, css audit, icons, vendor mirror,
                       import check, service-worker and server checks
+covers/<system>/      drop box art here (or per game from the app) - see covers/README.md
 homebrew/<system>/    drop freely-licensed files here, then npm run build
 docs/                 PLAYING.md, ADDING-GAMES.md
 ```

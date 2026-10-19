@@ -214,8 +214,16 @@ h1 { font-size: var(--fs-5); letter-spacing: -0.01em; }
   background: var(--bg-2);
   display: block;
   width: 100%;
+  position: relative;
+  overflow: hidden;
 }
+/* a real image the player supplied (see js/core/art.js) - the generated art is
+   the fallback, so this only has to make the photo sit inside the card */
+.card__art--photo { background: var(--bg-2); }
+.card__art--photo img { position: absolute; inset: 0; }
 .card__art img, .card__art svg { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sheet__art { position: relative; overflow: hidden; border-radius: var(--r-sm); background: var(--bg-2); }
+.sheet__art img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .card__body { padding: 0 8px; display: grid; gap: 2px; min-width: 0; }
 .card__title {
   font-size: var(--fs-1);

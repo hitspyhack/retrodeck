@@ -131,6 +131,22 @@ the blurry 1990s capture-card look.
 **Second screen** — DS and Dreamcast models draw one; touch on it is mapped to
 the pen, and the VMU screen shows through as a small panel.
 
+## Cover art
+
+The library draws every cover in the browser from the title and the console: a
+16x24 pixel mosaic, a flat poster, or a cartridge label (**Settings ▸ Look ▸
+Card artwork**). No artwork is downloaded, so a shelf of 488 titles costs one
+byte of network.
+
+Real images are supported and take one of two routes: **Add artwork** on a game's
+sheet (your file, resized and kept in this browser, works offline, nothing to
+rebuild), or a file in the site's `covers/<system>/` folder followed by
+`npm run build` - the sheet prints the exact filename that works. Either way the
+generated cover stays as the fallback if an image is missing, and box art of
+commercial games is deliberately not fetched from anywhere: it belongs to
+somebody else, and hot-linking it would break the offline promise. See
+[`../covers/README.md`](../covers/README.md).
+
 ## If it is slow
 
 - Turn rewind off (0 frames) and shader to `none`: both are per-frame costs.

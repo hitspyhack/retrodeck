@@ -257,8 +257,16 @@ check("generated catalogue matches its source data", async () => {
     if (g.year != null && !(g.year >= 1970 && g.year <= 2026)) bad.push(`${g.id}: year ${g.year}`);
     if (g.rating != null && !(g.rating >= 0 && g.rating <= 10)) bad.push(`${g.id}: rating ${g.rating}`);
     if (g.players != null && !(g.players >= 1 && g.players <= 12)) bad.push(`${g.id}: players ${g.players}`);
-    if (g.rom && !/^homebrew\/[a-z0-9]+\/[\w(). ,'+-]+$/.test(String(g.rom))) bad.push(`${g.id}: rom must be a homebrew/<system>/<file> path on this origin, got ${JSON.stringify(g.rom)}`);
-    if (g.rom && !existsSync(join(ROOT, String(g.rom)))) bad.push(`${g.id}: rom points at ${g.rom} which is not there`);
+    // system ids are mixed case (segaMD, homebrew), so the path class has to be
+    // too - a stricter pattern silently failed every Mega Drive entry
+    const originPath = (v) => new RegExp(`^(homebrew|covers)/[A-Za-z0-9]+/[\\w(). ,'+-]+$`).test(String(v));
+    for (const field of ["rom", "cover"]) {
+      const v = g[field];
+      if (!v) continue;
+      if (/^https?:/i.test(String(v))) bad.push(`${g.id}: ${field} must be a path on this origin, got ${JSON.stringify(v)}`);
+      else if (!originPath(v)) bad.push(`${g.id}: ${field} must look like ${field === "rom" ? "homebrew/<system>/<file>" : "covers/<system>/<file>"}, got ${JSON.stringify(v)}`);
+      else if (!existsSync(join(ROOT, String(v)))) bad.push(`${g.id}: ${field} points at ${v} which is not there`);
+    }
     if (g.genreSlug && !/^[a-z0-9-]+$/.test(g.genreSlug)) bad.push(`${g.id}: genreSlug "${g.genreSlug}"`);
   }
   if (bad.length) throw new Error(bad.slice(0, 8).join("\n"));

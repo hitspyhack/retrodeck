@@ -10,10 +10,12 @@ import { SYSTEM_BY_ID } from "../data/systems.js";
 import { vault } from "../core/idb.js";
 import { coverSVG } from "../core/cover.js";
 import { gameFor } from "../games/index.js";
-import { h, mount, sheet, toast, chip, sectionTitle, confirmSheet } from "../ui.js";
+import { h, mount, sheet, toast, chip, sectionTitle, confirmSheet, pickFiles } from "../ui.js";
+import { ART_TYPES, clearArt, setArtFromFile } from "../core/art.js";
 import {
   INDEX, INDEX_COUNTS, BUILTINS, searchGames, GENRES, gameCard, sysName, sysColor,
   romForGame, cartridgeSheet, readyGames, extsFor, playRefFor, bundledRom,
+  coverSrc, hasArt, rememberArt, artCache,
 } from "./parts.js";
 import { configForm } from "./config.js";
 
@@ -203,7 +205,8 @@ export function gameSheet(game, onDone) {
                   onclick: () => { s.close(); cartridgeSheet(game, { onDone: () => draw() }); },
                 }, "+ Add my cartridge"),
             romHash ? h("button.btn.btn--ghost", { onclick: manageRom }, "Cartridge") : null,
-            game.builtin ? h("button.btn.btn--ghost", { onclick: () => aboutBuiltin(game) }, "How it works") : null)),
+            game.builtin ? h("button.btn.btn--ghost", { onclick: () => aboutBuiltin(game) }, "How it works") : null,
+            h("button.btn.btn--ghost", { onclick: () => pickArt(draw) }, coverSrc(game) ? "Replace artwork" : "Add artwork"))),
         h("div", {},
           game.builtin
             ? h("div.notice", {}, h("b", {}, game.howto || "Original title"))
@@ -215,6 +218,7 @@ export function gameSheet(game, onDone) {
                   h("b", {}, "Supply your own cartridge."),
                   h("span", {}, `There is no ${sysName(game.system)} file (${extsFor(game.system)}) to download from this project. ` +
                     "Point it at a dump you legally own and the settings below apply to it.")),
+          artLine(),
           sectionTitle("Configuration for this game"),
           configForm({
             sysId: game.system,
@@ -225,6 +229,53 @@ export function gameSheet(game, onDone) {
           }))),
       game.builtin ? null : statesRow(game, romHash),
     );
+  }
+
+  /**
+   * Artwork is stored per game in this browser (js/core/art.js): resized on the
+   * way in, kept as a data URL next to the save states. Reaching for somebody's
+   * box-scan host would break the offline promise and use art that belongs to
+   * someone else, so an image comes from the device, or from the covers/ folder
+   * this server publishes, and the generated cover stays as the fallback.
+   */
+  async function pickArt(redraw) {
+    const files = await pickFiles({ accept: ART_TYPES });
+    const file = files && files[0];
+    if (!file) return;
+    try {
+      const rec = await setArtFromFile(game.id, file);
+      rememberArt(game.id, rec);
+      toast(`Artwork set - ${rec.w ? `${rec.w}x${rec.h}, ` : ""}${fmtBytes(rec.bytes || 0)} kept on this device`, "good", 3600);
+      redraw();
+    } catch (e) {
+      toast(`That image could not be used: ${(e && e.message) || e}`, "bad", 5000);
+    }
+  }
+
+  function artLine() {
+    const stored = hasArt(game.id);
+    const fromBuild = game.cover && coverSrc(game) === game.cover;
+    if (!stored && !fromBuild) return null;
+    const bits = [];
+    if (fromBuild) bits.push(h("span", {}, "File on this server: ", h("code", {}, game.cover)));
+    else if (!game.builtin) {
+      // the exact path the build looks for, so nobody has to guess the slug
+      bits.push(h("span", {}, "Or serve it from this origin: ",
+        h("code", {}, `covers/${game.system}/${game.id.split("/")[1]}.png`), " then ", h("code", {}, "npm run build"), "."));
+    }
+    if (stored) {
+      const rec = artCache.get(game.id);
+      bits.push(h("span", {}, "Your image: ", h("code", {}, `${rec?.w || "?"}x${rec?.h || "?"} · ${fmtBytes(rec?.bytes || 0)}`), " ",
+        h("button.btn.btn--sm.btn--ghost", { onclick: () => dropArt(draw) }, "Remove")));
+    }
+    return h("div.notice", {}, h("b", {}, "Artwork"), bits);
+  }
+
+  async function dropArt(redraw) {
+    await clearArt(game.id);
+    rememberArt(game.id, null);
+    toast("Artwork removed - the generated cover is back", "info");
+    redraw();
   }
 
   function play() {
@@ -284,10 +335,25 @@ export function gameSheet(game, onDone) {
 }
 
 function coverEl(game) {
-  return h("div", {
-    style: { borderRadius: "var(--r)", overflow: "hidden", border: "var(--line)", background: "var(--panel-2)" },
-    html: coverSVG(game, { style: store.get("ui.coverStyle", "pixel"), w: 200, h: 250 }),
+  const drawn = () => coverSVG(game, { style: store.get("ui.coverStyle", "pixel"), w: 200, h: 250 });
+  const src = coverSrc(game);
+  if (!src) {
+    return h("div", {
+      style: { borderRadius: "var(--r)", overflow: "hidden", border: "var(--line)", background: "var(--panel-2)" },
+      html: drawn(),
+    });
+  }
+  let host;
+  const img = h("img", {
+    src,
+    alt: `${game.title} cover`,
+    decoding: "async",
+    onerror: () => {
+      if (host) host.innerHTML = drawn();
+    },
   });
+  host = h("div.sheet__art", { style: { aspectRatio: "4 / 5" } }, img);
+  return host;
 }
 
 function row(k, v) {

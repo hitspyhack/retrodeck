@@ -271,6 +271,69 @@ async function deepPass() {
     await visit("#/", [], "leave the bundled route");
   }
 
+  // 5b2. card art: a real image when there is one, the generated cover when the
+  // image cannot load. Both halves matter - the shelf must never show a hole.
+  {
+    const { cover, coverSrc, gameById } = await import("../js/views/parts.js");
+    const withPath = { id: "nes/art-check", title: "Art Check", system: "nes", cover: "covers/nes/art-check.png" };
+    const el = cover(withPath, { w: 120, h: 160 });
+    const img = el.querySelector("img");
+    const okImg = Boolean(img) && img.getAttribute("src") === "covers/nes/art-check.png" && /--photo/.test(el.className);
+    console.log(`${okImg ? "ok  " : "FAIL"}  a game with a cover file renders the real image    ${img ? img.getAttribute("src") : "no <img>"}`);
+    allOk = okImg && allOk;
+    img.dispatchEvent(new globalThis.Event("error"));
+    const okSwap = !el.querySelector("img") && el.childNodes.length === 1 && !/--photo/.test(el.className);
+    console.log(`${okSwap ? "ok  " : "FAIL"}  a missing cover file falls back to generated art   children=${el.childNodes.length} class=${el.className}`);
+    allOk = okSwap && allOk;
+    const bare = { id: "gb/no-art", title: "No Art", system: "gb" };
+    const el3 = cover(bare, { w: 120, h: 160 });
+    // the generated cover arrives through the `html` prop, so assert what matters:
+    // no <img>, no photo class, and something is actually in there
+    const okGen = !el3.querySelector("img") && !/--photo/.test(el3.className) && coverSrc(bare) === null && el3.childNodes.length >= 1;
+    console.log(`${okGen ? "ok  " : "FAIL"}  no artwork at all still draws a generated cover    children=${el3.childNodes.length}, no <img>`);
+    allOk = okGen && allOk;
+    if (gameById) {
+      const real = gameById("nes/super-mario-bros");
+      if (real?.cover) console.log(`      note: the build indexes ${real.cover} into the catalogue`);
+    }
+  }
+
+  // 5b3. the artwork a player picks: decode, store, read back, remove. No canvas
+  // exists in this harness, so this also proves the code degrades to keeping the
+  // original bytes instead of throwing (js/core/art.js hasCanvas branch).
+  {
+    const { setArtFromFile, artFor, artIds, clearArt } = await import("../js/core/art.js");
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFUlEQVR4nGP8z8DAwMDAwMDAwMAAAA4AA/8Q8CkAAAAASUVORK5CYII=", "base64");
+    const file = { name: "my cover.png", type: "image/png", arrayBuffer: async () => png.buffer.slice(png.byteOffset, png.byteOffset + png.byteLength) };
+    const id = "nes/super-mario-bros";
+    const rec = await setArtFromFile(id, file);
+    const back = await artFor(id);
+    const ids = await artIds();
+    const okStore = Boolean(back && back.src.startsWith("data:image/png") && back.name === "my cover.png" && ids.has(id) && rec.bytes > 0);
+    console.log(`${okStore ? "ok  " : "FAIL"}  picked artwork is stored in the vault and read back  ${rec.w}x${rec.h} ${rec.bytes}B`);
+    allOk = okStore && allOk;
+    const { coverSrc, rememberArt, loadArt } = await import("../js/views/parts.js");
+    await loadArt();
+    rememberArt(id, back);
+    const viaApp = coverSrc({ id, title: "Super Mario Bros.", system: "nes" });
+    const okWire = typeof viaApp === "string" && viaApp.startsWith("data:image/");
+    console.log(`${okWire ? "ok  " : "FAIL"}  the card reads stored art through coverSrc()           ${String(viaApp).slice(0, 22)}...`);
+    allOk = okWire && allOk;
+    await clearArt(id);
+    rememberArt(id, null);
+    const gone = await artFor(id);
+    console.log(`${!gone ? "ok  " : "FAIL"}  removing artwork puts the generated cover back`);
+    allOk = (!gone) && allOk;
+    let refused = false;
+    try {
+      await setArtFromFile(id, { name: "notes.txt", type: "text/plain", arrayBuffer: async () => new ArrayBuffer(4) });
+    } catch {
+      refused = true;
+    }
+    console.log(`${refused ? "ok  " : "FAIL"}  a non-image is refused, not stored`);
+    allOk = refused && allOk;
+  }
+
   // 5c. the "Homebrew & Public Domain" shelf holds files from many consoles, so
   // its core is resolved from the file. It must never hand the loader a core
   // named "auto" (that is a 404 for cores/auto.js) and never guess for a .zip.

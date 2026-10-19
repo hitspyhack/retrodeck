@@ -11,6 +11,7 @@ import { MODEL_BY_ID, MODELS_BY_SYSTEM, defaultModelFor } from "./data/models.js
 import { skinVars } from "./data/skins.js";
 import { GAMES as BUILTINS } from "./games/index.js";
 import { probeEmulator, localVendorPresent } from "./core/emulator.js";
+import { loadArt } from "./views/parts.js";
 import { h, mount, toast, keepScreenOn, clear } from "./ui.js";
 import { renderHome } from "./views/home.js";
 import { renderLibrary } from "./views/library.js";
@@ -277,6 +278,15 @@ async function boot() {
   });
 
   await render();
+  // Stored cover art arrives from IndexedDB a moment after the first paint. It
+  // re-renders once, and only when there is actually something to show, so a
+  // vault without artwork costs nothing. (parts.js keeps its own lazy path back
+  // to this module - a static import both ways would be a cycle.)
+  loadArt()
+    .then((n) => {
+      if (n) render();
+    })
+    .catch(() => {});
   checkRuntime();
   setInterval(checkRuntime, 5 * 60 * 1000);
 

@@ -11,6 +11,7 @@ import { store } from "../core/store.js";
 import { vault } from "../core/idb.js";
 import { sniffRom, cleanTitle, guessRegion } from "../core/detect.js";
 import { coverSVG, systemColor } from "../core/cover.js";
+import { artFor, artIds } from "../core/art.js";
 import { h, mount, sheet, toast, pickFiles, esc, confirmSheet } from "../ui.js";
 
 export { INDEX, INDEX_COUNTS, INDEX_META, BUILTINS };
@@ -96,13 +97,67 @@ export function searchGames(q, { system = "all", genre = "all", only = null } = 
 
 export const GENRES = () => [...new Set(INDEX.map((g) => g.genre))].sort();
 
-/* ---------------------------------------------------------------- card art */
+/* ------------------------------------------------------------------ card art */
+/**
+ * Real artwork, two sources: a `cover` path the build indexed from covers/<system>/
+ * (see docs/ADDING-GAMES.md), or an image the player stored in the vault for this
+ * game. Cards render synchronously, so the vault side is a cache that app.js
+ * fills once per session and then re-renders.
+ */
+const ART = new Map();
+let artLoaded = false;
+
+export async function loadArt() {
+  if (artLoaded) return ART.size;
+  artLoaded = true;
+  try {
+    for (const id of await artIds()) ART.set(id, await artFor(id));
+  } catch {
+    /* no IndexedDB in this context: generated covers only */
+  }
+  return ART.size;
+}
+
+export const artCache = ART;
+export const hasArt = (gameId) => Boolean(gameId && ART.get(gameId));
+
+/** @param {{src:string,name?:string}|null} rec */
+export function rememberArt(gameId, rec) {
+  if (rec) ART.set(gameId, rec);
+  else ART.delete(gameId);
+}
+
+/** The image a card should show, or null for "draw the generated cover". */
+export function coverSrc(game) {
+  if (!game) return null;
+  if (game.cover) return game.cover;
+  return ART.get(game.id)?.src || null;
+}
+
 export function cover(game, { w = 120, h: hh = 160 } = {}) {
   const style = store.get("ui.coverStyle", "pixel");
-  return h("span.card__art", {
-    "aria-hidden": "true",
-    html: coverSVG(game, { style, w, h: hh }),
+  const drawn = () => coverSVG(game, { style, w, h: hh });
+  if (!coverSrc(game)) return h("span.card__art", { "aria-hidden": "true", html: drawn() });
+
+  // A `cover` path the build wrote can go stale - the file gets moved or
+  // deleted and the next build has not run. Rather than leave a grey hole in the
+  // shelf, a failed load replaces the image with the generated cover. The
+  // handler closes over `host` instead of the event, because the event object is
+  // the least reliable part of this across browsers (and test harnesses).
+  let host;
+  const img = h("img", {
+    src: coverSrc(game),
+    alt: "",
+    loading: "lazy",
+    decoding: "async",
+    onerror: () => {
+      if (!host) return;
+      host.classList.remove("card__art--photo");
+      host.innerHTML = drawn();
+    },
   });
+  host = h("span.card__art.card__art--photo", { "aria-hidden": "true" }, img);
+  return host;
 }
 
 /**

@@ -145,6 +145,33 @@ texture. `skinVars()` supplies the fallbacks so a skin can be four colours deep
 and still render; `AFTERMARKET` is the list of skins that are not period-correct
 and are labelled as such.
 
+## 4. Cover artwork → `covers/<system>/`
+
+A game with no artwork gets a generated cover. To give it a real one:
+
+```
+covers/nes/super-mario-bros.png     # .jpg .webp .avif .gif .svg also work
+npm run build
+```
+
+The file name is slugified and matched against catalogue ids, so the name has to
+be the title as the index spells it - the game's sheet prints the exact path,
+under *Artwork*. Anything in `covers/` that matches no title is reported as a
+note by the build instead of being dropped on the floor, and a card whose file
+later disappears draws the generated cover again (the `<img>` error handler
+replaces it), so a stale index is never a hole in the shelf.
+
+Artwork an individual player wants is not a build step: **Add artwork** on the
+game's sheet resizes the chosen image to at most 560 px and stores it in
+IndexedDB as `art:<game id>` (`js/core/art.js`), which is per device, works
+offline and never leaves it.
+
+Why not a URL to a box-art site? Two reasons, both load-bearing for this project:
+scans are somebody else's copyright, and an `<img>` pointed at a third-party host
+turns "opens with the radio off" into a request that fails. `npm test` fails any
+catalogue `cover` or `rom` that is not a path inside `covers/` or `homebrew/`
+and on disk.
+
 ## Adding a built-in game
 
 `js/games/` is the only playable content this repo ships, so it is deliberately

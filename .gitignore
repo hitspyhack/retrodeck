@@ -82,6 +82,16 @@ homebrew/**/*
 !homebrew/**/
 !homebrew/**/README.md
 
+# --- cover artwork: same policy, and the same reason (it is somebody else's
+#     copyright), so a covers/ tree is a local or deploy-time thing ---
+covers/**/*.png
+covers/**/*.jpg
+covers/**/*.jpeg
+covers/**/*.webp
+covers/**/*.avif
+covers/**/*.gif
+covers/**/*.svg
+
 # --- documentation that `*.md` above would otherwise hide ---
 !README.md
 !NOTICE.md
