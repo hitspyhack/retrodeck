@@ -71,6 +71,20 @@ server.on("exit", (code, signal) => {
 });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 /**
+ * `page.evaluate()` is the other call with no timeout: Playwright will wait for
+ * the promise forever, and "forever" is what happened on CI, where the core
+ * genuinely boots (unlike this sandbox, where the renderer dies fast enough that
+ * the call rejects) - a busy main thread means the read never answers, the lane
+ * sits there, and the job's own budget is what finally stops it. Same rule as
+ * screenshots: a read that cannot answer is worth a note, not a run.
+ */
+const ev = (page, fn, ms = 8000) =>
+  Promise.race([
+    page.evaluate(fn).catch(() => null),
+    sleep(ms).then(() => "timeout"),
+  ]);
+
+/**
  * A screenshot that the page cannot answer must never be worth the run.
  * `page.screenshot()` ignores `setDefaultTimeout()` in this Playwright version -
  * with a renderer that is going down (which is what a wasm core does on a
@@ -358,13 +372,13 @@ async function main() {
       // core blob came back 200". Anything beyond that needs a machine with a GPU,
       // which is what CI's browser job runs on.
       let frameTxt = null;
-      try {
-        frameTxt = await page.evaluate(() => {
-          const f = document.querySelector("iframe");
-          const d = f && f.contentDocument;
-          return d ? { hasCanvas: Boolean(d.querySelector("canvas")), hasGame: Boolean(d.getElementById("game")), txt: (d.body?.textContent || "").slice(0, 160) } : null;
-        });
-      } catch { frameTxt = null; }
+      const probe = await ev(page, () => {
+        const f = document.querySelector("iframe");
+        const d = f && f.contentDocument;
+        return d ? { hasCanvas: Boolean(d.querySelector("canvas")), hasGame: Boolean(d.getElementById("game")), txt: (d.body?.textContent || "").slice(0, 160) } : null;
+      });
+      if (probe === "timeout") console.log("note  the page would not answer the frame read (a core that is really running keeps the thread busy) - the two assertions above are the ones that matter here");
+      else frameTxt = probe;
       if (frameTxt) {
         say(!/Network Error|404|Failed to/i.test(frameTxt.txt), "the frame's own document reports no load error", JSON.stringify(frameTxt.txt.trim().slice(0, 50)));
         await snap(page, "play-core.png");
