@@ -60,6 +60,12 @@ jobs:
       - run: npm i --no-save --no-audit --no-fund playwright@1.49.1
       - run: npx playwright install --with-deps chromium
       - name: boot the app in chromium
+        # 13 minutes of the 20-minute job for the lane itself: its tail (import a
+        # rom, fetch a real core) is the slow part on shared hardware. The harness
+        # prints ::error:: / ::notice:: lines because a Contents-only token can read
+        # those through the API and cannot read this job's log.
+        env:
+          RD_BROWSER_OVERALL: "780000"
         run: node tools/browser-check.mjs
       # A Contents-only token cannot read a job log, but it can read check-run
       # annotations - so the failure path prints what it needs to be diagnosable

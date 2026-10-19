@@ -35,6 +35,10 @@ const BUDGET = Number(process.env.RD_BROWSER_TIMEOUT || 150000);
 // like a broken app. Twenty seconds is enough for a cold page on a shared runner
 // and short enough that a stall is one FAIL line, not a lost run.
 const WAIT = Number(process.env.RD_BROWSER_WAIT || 20000);
+// CI's browser job gets its own overall ceiling (see .github/workflows/ci.yml):
+// the lane's real cost is the core download, and a shared runner is slower at it
+// than a laptop. BUDGET * 3 stays the default so a local run cannot wander.
+const OVERALL = Number(process.env.RD_BROWSER_OVERALL || BUDGET * 3);
 
 let chromium;
 try {
@@ -66,6 +70,24 @@ server.on("exit", (code, signal) => {
   serverLog += `\n[server exited code=${code} signal=${signal}]\n`;
 });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+/**
+ * A screenshot that the page cannot answer must never be worth the run.
+ * `page.screenshot()` ignores `setDefaultTimeout()` in this Playwright version -
+ * with a renderer that is going down (which is what a wasm core does on a
+ * GPU-less runner) the CDP call simply never returns, which is how CI ended up
+ * with 26 green assertions, an empty .browser-check/ and a timed-out job.
+ */
+async function snap(page, name) {
+  const hit = await Promise.race([
+    page.screenshot({ path: join(OUT, name), timeout: 10000 }).then(() => true).catch(() => "error"),
+    sleep(12000).then(() => "timeout"),
+  ]);
+  if (hit !== true) {
+    console.log(`note  no ${name} - the screenshot ${hit === "timeout" ? "never answered" : "failed"} (a dying renderer does that)`);
+    return false;
+  }
+  return true;
+}
 let counted = 0;
 const total = () => counted;
 
@@ -175,7 +197,7 @@ async function main() {
   });
   say(paint.found && paint.colors > 2, "a built-in game paints real pixels", `${paint.colors} colours at ${paint.size}`);
   say(paint.moved, "and it animates (two samples differ)");
-  await page.screenshot({ path: join(OUT, "play-builtin.png") });
+  await snap(page, "play-builtin.png");
 
   /* ---------------------------------------- 3.. cores.json agrees with the decks */
   at("3 cores.json agrees with the decks");
@@ -272,7 +294,7 @@ async function main() {
   at("6 library screenshot");
   await page.goto(`${ORIGIN}/#/library`, { waitUntil: "domcontentloaded" });
   await sleep(1200);
-  await page.screenshot({ path: join(OUT, "library.png") });
+  await snap(page, "library.png");
 
   const noise = errs.filter((e) => !/favicon|WebGL|deprecat|ERR_FAILED|net::ERR|Target crashed/i.test(e));
   say(noise.length === 0, "no uncaught errors in the browser console", noise.slice(0, 3).join(" | ") || "clean");
@@ -314,7 +336,7 @@ async function main() {
     const rows = await page.locator("#view .li, #view .card, #view .row, #view .vault__row").allTextContents();
     const listed = rows.filter((t) => /probe/i.test(t));
     say(listed.length > 0, "the imported image is listed in the vault", JSON.stringify((listed[0] || rows[0] || "no rows").replace(/\s+/g, " ").slice(0, 60)));
-    await page.screenshot({ path: join(OUT, "vault-imported.png") });
+    await snap(page, "vault-imported.png");
     const play = page.locator('button:has-text("▶")').first();
     const hasPlay = await play.count();
     say(hasPlay > 0, "and it has a play control");
@@ -345,7 +367,7 @@ async function main() {
       } catch { frameTxt = null; }
       if (frameTxt) {
         say(!/Network Error|404|Failed to/i.test(frameTxt.txt), "the frame's own document reports no load error", JSON.stringify(frameTxt.txt.trim().slice(0, 50)));
-        try { await page.screenshot({ path: join(OUT, "play-core.png") }); } catch {}
+        await snap(page, "play-core.png");
       } else {
         console.log('note  the renderer went down with the core running - this sandbox cannot hold a GPU-less wasm core (a bare EmulatorJS page dies the same way); the fetch and mount above are the parts this environment can prove');
       }
@@ -363,7 +385,7 @@ async function main() {
 }
 
 try {
-  await Promise.race([main(), sleep(BUDGET * 3).then(() => {
+  await Promise.race([main(), sleep(OVERALL).then(() => {
   throw new Error(`browser check exceeded its overall budget while in: ${stage} (assertions so far: ${total()}, failures: ${failures})`);
 })]);
 } catch (err) {
