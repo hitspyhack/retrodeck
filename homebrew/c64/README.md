@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | disk or tape - accepted extensions: `.d64`, `.t64`, `.g64`, `.prg`, `.p00`, `.tap`, `.crt`, `.d71`, `.d81`, `.zip` |
-| Core | `c64` |
+| Core | `c64`; also selectable: `vice_x64`, `vice_x128`, `vice_xvic` |
 | Buttons | DB9 joystick + keyboard (for C64: LOAD"*",8,1 needs letters and Return) - 6 inputs |
 | Other layouts | C64 keyboard only, Joystick + key row |
 | Aspect | 4:3 - native 320x200 |

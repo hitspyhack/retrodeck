@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.ws`, `.wsc`, `.pc2`, `.zip` |
-| Core | `wonderswan` |
+| Core | `wonderswan`; also selectable: `mednafen_wswan` |
 | Buttons | WonderSwan (landscape) (4 greys, X/Y left, A/B/C right - it rotates with you) - 11 inputs |
 | Other layouts | WonderSwan (portrait) |
 | Aspect | 224:152 - native 224x152 |

@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | disc image - accepted extensions: `.cue`, `.chd`, `.bin`, `.iso`, `.ccd`, `.zip` |
-| Core | `segaSaturn` |
+| Core | `segaSaturn`; also selectable: `yabause`, `kronos` |
 | Buttons | Saturn Control Pad (db, 6 buttons) (digital-only 6-button + L/M/R) - 13 inputs |
 | Other layouts | 3D Control Pad (analog), Arcade Racer (wheel + pedals), Sega Mouse + D-pad |
 | Aspect | 4:3 - native 320x224 |

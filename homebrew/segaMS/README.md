@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.sms`, `.zip`, `.7z` |
-| Core | `segaMS` |
+| Core | `segaMS`; also selectable: `genesis_plus_gx`, `picodrive`, `mastersystem` |
 | Buttons | Master System pad (two buttons + console PAUSE switch) - 7 inputs |
 | Other layouts | SMS Light Phaser + paddle |
 | Aspect | 4:3 - native 256x192 |

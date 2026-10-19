@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | disc image - accepted extensions: `.chd`, `.cue`, `.bin`, `.iso`, `.md`, `.smd`, `.zip` |
-| Core | `segaCD` |
+| Core | `segaCD`; also selectable: `picodrive` |
 | Buttons | Mega Drive 2 / Genesis 2 (3-button) (cheaper membrane pad, same layout) - 8 inputs |
 | Other layouts | Mega Drive 6-button (FA-301), Mega-CD CD Remote (6 buttons) |
 | Aspect | 4:3 - native 320x224 |

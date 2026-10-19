@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.vb`, `.vboy`, `.bin`, `.zip` |
-| Core | `vb` |
+| Core | `vb`; also selectable: `virtualboy` |
 | Buttons | Virtual Boy (dual pad) (two D-pads, two sets of L/R - stereo is part of the hardware) - 10 inputs |
 | Other layouts | Virtual Boy (single-thumb) |
 | Aspect | 5:3 - native 384x224 |

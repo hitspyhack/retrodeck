@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.a78`, `.lnx`, `.zip`, `.bin` |
-| Core | `atari7800` |
+| Core | `atari7800`; also selectable: `atari2600`, `lynx` |
 | Buttons | Atari CX40 joystick + console switches (1 stick, 1 fire, left/right difficulty, reset & select) - 7 inputs |
 | Other layouts | 7800 ProJoystick, Atari Lynx |
 | Aspect | 4:3 - native 160x192 |

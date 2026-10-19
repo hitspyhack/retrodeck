@@ -166,7 +166,7 @@ six built-in games never touch the network at all.
 
 | Symptom | Almost always |
 | --- | --- |
-| "The core could not load" | no runtime reachable: offline with nothing vendored, or a CDN blocked by the network. Settings ▸ Emulator shows which source it tried |
+| "The core could not load" | no runtime reachable: offline with nothing vendored, or a CDN blocked by the network. The card names the core it wanted, so if your mirror just lacks that one, `Other cores` takes you to the deck list where another core for the same console is one tap away. Settings ▸ Emulator shows which source it tried |
 | Spinner forever, then "The emulator never answered" | the core loaded but the WASM refused to start — usually a threads-requiring core without cross-origin isolation: restart with `npm run vendor:serve` |
 | Black screen, sound only | wrong core for that file, or a disc image without its `.cue`. Re-import and read the sniff summary |
 | Boots to a logo then hangs | BIOS missing or region-mismatched (PSX, NDS, Dreamcast, GBA optional-but-helpful) |

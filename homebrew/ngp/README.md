@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.ngp`, `.ngc`, `.zip`, `.vsr` |
-| Core | `ngp` |
+| Core | `ngp`; also selectable: `mednafen_ngp` |
 | Buttons | Neo Geo Pocket Color (the good stick - 8-way, plus A/B and Option) - 7 inputs |
 | Other layouts | NGPC + Quick Shot buttons |
 | Aspect | 1:1 - native 160x152 |

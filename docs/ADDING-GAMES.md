@@ -36,7 +36,12 @@ Rules the indexer enforces, with a warning on stderr and a non-zero exit:
   because `.txt` in there is documentation;
 - `README.md` and dotfiles are always skipped;
 - a file whose slug matches a catalogue row *upgrades that row* to `bundled`
-  instead of adding a duplicate.
+  instead of adding a duplicate;
+- `homebrew/homebrew/` is the *Homebrew & Public Domain* shelf, which has no one
+  console to inherit: the core is resolved from the file's extension by asking
+  which deck accepts it (`.sfc` → the SNES core, `.ngp` → Neo Geo Pocket). A
+  `.zip` cannot be resolved that way, so the loader decides, and the deck's
+  config lists every core the shelf can boot if you want to force one.
 
 Nothing else about the pipeline uploads or shares the file: it is a static
 asset on your origin, and `git` ignores it (`.gitignore` keeps `homebrew/**/*`

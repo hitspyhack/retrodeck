@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | disc image - accepted extensions: `.chd`, `.cue`, `.gdi`, `.bin`, `.iso`, `.cdi`, `.zip` |
-| Core | `dreamcast` |
+| Core | `dreamcast`; also selectable: `flycast` |
 | Buttons | Dreamcast controller (chibi stick, four face buttons, analog L/R triggers) - 12 inputs |
 | Other layouts | Visual Memory Unit (second screen), Dreamcast gun + stick, Dreamcast Fishing Rod |
 | Aspect | 4:3 - native 640x480 |

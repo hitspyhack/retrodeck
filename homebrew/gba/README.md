@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.gba`, `.agb`, `.gbz`, `.zip`, `.7z` |
-| Core | `gba` |
+| Core | `gba`; also selectable: `mgba`, `vba-next`, `mednafen_gba` |
 | Buttons | Game Boy Advance (001 - L/R bumpers, A/B at 20°) - 10 inputs |
 | Other layouts | GBA SP / Micro shells, GBA Micro pad, GBA + e-Reader / Player, GBA link-cable pair |
 | Aspect | 3:2 - native 240x160 |

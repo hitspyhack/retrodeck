@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.n64`, `.z64`, `.v64`, `.ndd`, `.zip`, `.7z` |
-| Core | `n64` |
+| Core | `n64`; also selectable: `mupen64plus-next`, `parallel_n64` |
 | Buttons | N64 Controller (3 grips) (NUS-005 - stick, C-buttons, Z, R) - 15 inputs |
 | Other layouts | N64 + Rumble/Memory Pak, N64 + mouse pad region |
 | Aspect | 4:3 - native 320x240 |

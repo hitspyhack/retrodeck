@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.nes`, `.fds`, `.unf`, `.nsf`, `.zip`, `.7z` |
-| Core | `nes` |
+| Core | `nes`; also selectable: `fceumm`, `nestopia` |
 | Buttons | NES Control Deck (HVC-016 / Famicom pads) - 9 inputs |
 | Other layouts | Famicom (HVC-001) hardwired pads, NES Zapper + D-pad |
 | Aspect | 4:3 - native 256x240 |

@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.nes`, `.sfc`, `.gb`, `.gbc`, `.gba`, `.md`, `.sms`, `.gg`, `.pce`, `.a26`, `.lnx`, `.ngp`, `.ws`, `.zip` |
-| Core | `auto` |
+| Core | `auto` - chosen from the file's extension; also selectable: `nes`, `snes`, `gb`, `gbc`, `gba`, `n64`, `segaMD`, `segaMS`, `segaGG`, `segaSaturn`, `pce_fast`, `atari2600`, `atari7800`, `ngp`, `wonderswan`, `fbneo` |
 | Buttons | SNES Controller (SNS-005 - the four-face-button template) - 8 inputs |
 | Other layouts | NES Control Deck, Game Boy (DMG-01), Game Boy Advance, Mega Drive 3-button (VA1/2), PC Engine Core Pad |
 | Aspect | 4:3 - native 256x224 |

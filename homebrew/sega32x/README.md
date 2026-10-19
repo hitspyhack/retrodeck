@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.32x`, `.bin`, `.smd`, `.zip` |
-| Core | `sega32x` |
+| Core | `sega32x`; also selectable: `picodrive` |
 | Buttons | Mega Drive 3-button (VA1/2) (the round D-pad + three red buttons at 20°) - 7 inputs |
 | Other layouts | Mega Drive 6-button (FA-301) |
 | Aspect | 4:3 - native 320x224 |

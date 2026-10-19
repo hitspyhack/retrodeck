@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.gbc`, `.gb`, `.dmg`, `.zip`, `.7z` |
-| Core | `gbc` |
+| Core | `gbc`; also selectable: `gambatte`, `sameboy` |
 | Buttons | Game Boy Color (DMG shape + power button + A/B colour tabs) - 8 inputs |
 | Other layouts | Game Boy Pocket |
 | Aspect | 10:9 - native 160x144 |

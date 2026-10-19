@@ -21,6 +21,16 @@ const { defaultModelFor, modelsFor } = await import("../js/data/models.js");
 const { SKINS } = await import("../js/data/skins.js");
 const { romWord } = await import("../js/views/parts.js").catch(() => ({ romWord: () => "cartridge" }));
 
+/** the Core row: what the deck boots by default, plus the alternatives */
+const coreRow = (sys) => {
+  const alt = (sys.cores || []).map((c) => c.id).filter((id) => id !== sys.ejsCore);
+  const head =
+    sys.ejsCore === "auto"
+      ? "`auto` - chosen from the file's extension"
+      : `\`${sys.ejsCore || sys.cores?.[0]?.id || "built-in"}\``;
+  return alt.length ? `${head}; also selectable: ${alt.map((c) => `\`${c}\``).join(", ")}` : head;
+};
+
 const word = (id) => {
   try {
     return romWord(id);
@@ -65,7 +75,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | ${word(sys.id)} - accepted extensions: ${(sys.exts || []).map((e) => `\`.${e}\``).join(", ") || "any"} |
-| Core | \`${sys.ejsCore || sys.cores?.[0]?.id || "built-in"}\` |
+| Core | ${coreRow(sys)} |
 | Buttons | ${pad ? `${pad.name}${pad.aka ? ` (${pad.aka})` : ""}` : sys.pad} - ${sys.buttons.length} inputs |
 | Other layouts | ${(sys.pads || []).filter((p) => p !== sys.pad).map((p) => PADS[p]?.name || p).join(", ") || "none"} |
 | Aspect | ${sys.ar ? `${sys.ar[0]}:${sys.ar[1]}` : "auto"}${sys.res ? ` - native ${sys.res[0]}x${sys.res[1]}` : ""} |

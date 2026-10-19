@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.gg`, `.zip`, `.7z` |
-| Core | `segaGG` |
+| Core | `segaGG`; also selectable: `genesis_plus_gx`, `picodrive` |
 | Buttons | Game Gear (handheld SMS: start button under screen, colour filter) - 7 inputs |
 | Other layouts | Game Gear + TV tuner |
 | Aspect | 5:4 - native 160x144 |

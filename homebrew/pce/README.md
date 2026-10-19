@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.pce`, `.cue`, `.chd`, `.sgx`, `.ccd`, `.zip` |
-| Core | `pce_fast` |
+| Core | `pce_fast`; also selectable: `pce`, `mednafen_pce_fast` |
 | Buttons | PC Engine Core Pad (I/II diagonal, Run + Select, 2-button only) - 9 inputs |
 | Other layouts | PC Engine 6-button (Arcade Pad Pro), Sega Mouse + D-pad, Ahead-6 (mouse, 6 buttons) |
 | Aspect | 4:3 - native 256x224 |

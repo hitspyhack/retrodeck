@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.gb`, `.dmg`, `.sgb`, `.sgb2`, `.zip`, `.7z` |
-| Core | `gb` |
+| Core | `gb`; also selectable: `gambatte`, `sameboy`, `tb48` |
 | Buttons | Game Boy (DMG-01) (diagonal A/B, 45°-tilted start/select) - 8 inputs |
 | Other layouts | Game Boy Pocket, DMG with dot-matrix, GB (play-it-like-a-DMG) |
 | Aspect | 10:9 - native 160x144 |

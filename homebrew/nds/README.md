@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.nds`, `.dsi`, `.zip`, `.7z` |
-| Core | `nds` |
+| Core | `nds`; also selectable: `melonds`, `desmume` |
 | Buttons | Nintendo DS (top + touch) (ABXY, L/R, Start/Select, home; lower screen is a touch layer) - 13 inputs |
 | Other layouts | DS stylus-first, DSi (camera + bigger buttons) |
 | Aspect | 4:3 - native 256x192 |

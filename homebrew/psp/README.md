@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | disc image - accepted extensions: `.iso`, `.cso`, `.pbp`, `.elf`, `.chd` |
-| Core | `psp` |
+| Core | `psp`; also selectable: `ppsspp` |
 | Buttons | PSP faceplate (nub left, 4 face buttons right, start/select below) - 13 inputs |
 | Other layouts | PSP Go (slide-out pad) |
 | Aspect | 16:9 - native 480x272 |

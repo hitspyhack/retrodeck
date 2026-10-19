@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | game folder or DOSBox config - accepted extensions: `.dosbox`, `.conf`, `.zip`, `.exe`, `.scummvm`, `.svm` |
-| Core | `dos` |
+| Core | `dos`; also selectable: `vapor/8x8`, `scummvm` |
 | Buttons | DOS keyboard + mouse (arrow keys, Enter, Esc, Space, right-click for menus) - 7 inputs |
 | Other layouts | DOS keyboard only, ScummVM pointer only |
 | Aspect | 4:3 - native 320x200 |

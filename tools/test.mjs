@@ -147,11 +147,32 @@ check("systems: pads, buttons, cores and extensions line up", () => {
     for (const [k, v] of Object.entries(s.features || {})) {
       if (v === null || v === undefined || typeof v === "number") bad.push(`${s.id}: features.${k} = ${JSON.stringify(v)} is neither a flag nor prose`);
     }
-    for (const c of s.cores || []) if (!c.id || !c.label) bad.push(`${s.id}: core entry needs id+label`);
+    // the core a deck boots is cores[0] - the config form offers that list, the
+    // player passes the first entry, so the two must never disagree
+    const coreIds = (s.cores || []).map((c) => c.id);
+    if (!coreIds.length) bad.push(`${s.id}: no cores[] to boot`);
+    if (s.ejsCore !== coreIds[0]) bad.push(`${s.id}: ejsCore "${s.ejsCore}" is not cores[0].id "${coreIds[0]}"`);
+    for (const c of s.cores || []) {
+      if (!c.id || !c.label) bad.push(`${s.id}: core entry needs id+label`);
+      // a core id ends up as `data/cores/<id>.js`, so it must be a path-safe
+      // token; uppercase is legal because a few decks boot the system id itself
+      if (c.id !== "auto" && !/^[A-Za-z0-9][A-Za-z0-9_./-]{0,31}$/.test(c.id)) bad.push(`${s.id}: core id "${c.id}" cannot be a path segment under data/cores/`);
+    }
     if (s.bios && !s.bios.label) bad.push(`${s.id}: bios without label`);
     if (!/^#[0-9a-f]{6}$/i.test(s.color || "")) bad.push(`${s.id}: color "${s.color}"`);
     for (const p of s.palettes || []) if (!p.id || !p.name) bad.push(`${s.id}: palette entry needs id + name (got ${JSON.stringify(p)})`);
     for (const b of s.bios?.files || []) if (!/^[a-z0-9]{1,5}$/.test(b)) bad.push(`${s.id}: bios file ext "${b}"`);
+  }
+  // "auto" is only allowed for a shelf that can resolve a core from the file:
+  // every core it offers must be a real deck's core, and every extension it
+  // accepts (archives excepted) must belong to a deck that can name one.
+  const realCores = new Set(SYSTEMS.filter((x) => x.ejsCore !== "auto").map((x) => x.ejsCore));
+  for (const s of SYSTEMS.filter((x) => x.ejsCore === "auto")) {
+    for (const c of s.cores || []) if (c.id !== "auto" && !realCores.has(c.id)) bad.push(`${s.id}: core "${c.id}" is not any deck's ejsCore - the loader would 404`);
+    for (const e of s.exts || []) {
+      if (e === "zip" || e === "7z") continue;
+      if (!SYSTEMS.some((x) => x.id !== s.id && x.ejsCore !== "auto" && (x.exts || []).includes(e))) bad.push(`${s.id}: ext "${e}" belongs to no deck that has a core`);
+    }
   }
   if (bad.length) throw new Error(bad.slice(0, 10).join("\n"));
   return `${SYSTEMS.length} systems`;

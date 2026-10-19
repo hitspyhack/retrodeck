@@ -22,7 +22,7 @@
 import { store } from "./store.js";
 import { vault } from "./idb.js";
 import { ejsControls } from "./pad.js";
-import { SYSTEM_BY_ID } from "../data/systems.js";
+import { SYSTEMS, SYSTEM_BY_ID } from "../data/systems.js";
 import { MODEL_BY_ID } from "../data/models.js";
 
 export const CDN_VERSIONS = ["stable", "latest", "4.2.4", "nightly"];
@@ -90,6 +90,8 @@ export class EmuPlayer {
     this.dead = false;
     this.started = false;
     this.lastError = null;
+    /** which core this boot asked the loader for - error copy names it */
+    this.coreName = null;
   }
 
   on(fn) {
@@ -175,7 +177,7 @@ export class EmuPlayer {
   window.__send = send;
   try {
     window.EJS_player = '#game';
-    window.EJS_core = ${patchUrl(opts.core)};
+    ${opts.core ? `window.EJS_core = ${patchUrl(opts.core)};` : "/* EJS_core left unset: the loader detects it from the file */"}
     window.EJS_gameUrl = ${patchUrl(gameUrl)};
     window.EJS_biosUrl = ${patchUrl(biosUrl || '')};
     window.EJS_gameName = ${patchUrl(opts.name)};
@@ -226,7 +228,7 @@ export class EmuPlayer {
   } catch(err){ send('error', { msg: 'setup failed: ' + (err && err.message) }); }
 })();
 <\/script>
-<script src="${base}loader.js" onerror="window.__send('loader-error',{url:${patchUrl(base + "loader.js")}})"><\/script>
+<script src="${base}loader.js" onerror="window.__send('loader-error',{url:${patchUrl(base + "loader.js")},core:${patchUrl(opts.core || "")}})"><\/script>
 </body></html>`;
   }
 
@@ -237,7 +239,8 @@ export class EmuPlayer {
       return false;
     }
     const biosUrl = await this.#biosUrl();
-    const core = this.cfg.core || store.get(["emulator", "cores", this.o.systemId].join(".")) || this.system?.ejsCore || this.o.systemId;
+    const core = pickCore(this.o.systemId, { ...this.cfg, ext: this.o.game?.ext, fileName: this.o.rom?.name });
+    this.coreName = core;
     const options = {
       "save-state-location": store.get("emulator.saveStateLocation", "browser"),
       "rewind_granularity": 2,
@@ -295,9 +298,10 @@ export class EmuPlayer {
       if (!this.started)
         this.#emit("error", {
           code: "core-timeout",
+          core: this.coreName,
           msg:
             `The emulator payload never answered (${dataBase()}). On a phone this usually means the CDN is blocked ` +
-            "or you are offline. Settings ▸ Emulator ▸ Source → Local after running `npm run vendor`, or play a built-in title.",
+            "or you are offline. Settings ▸ Emulator ▸ Payload source → ./vendor (self-hosted) after running `npm run vendor`, or play a built-in title.",
         });
     }, 25000);
     return true;
@@ -343,9 +347,12 @@ export class EmuPlayer {
         this.#emit("error", {
           code: "no-payload",
           url: d.url,
+          core: d.core || this.coreName,
           msg:
-            "Could not load the emulator core files. This build needs either the EmulatorJS CDN (Settings ▸ Emulator ▸ Source: CDN) " +
-            "or a local mirror in /vendor (npm run vendor). The six built-in titles still work offline.",
+            `Could not load the emulator core files${d.core ? ` (it wanted the "${d.core}" core)` : ""}. This build needs either ` +
+            "the EmulatorJS CDN (Settings ▸ Emulator ▸ Payload source → cdn.emulatorjs.org) or a local mirror in vendor/ " +
+            "(npm run vendor). A mirror that lacks this one core is the other reason: pick another core for the deck. " +
+            "The six built-in titles still work offline.",
         });
         break;
       case "error":
@@ -470,9 +477,31 @@ function esc(s) {
 
 /** Suggested core for a system, honouring the user's per-system override. */
 export function pickCore(systemId, config = {}) {
-  if (config.core) return config.core;
+  if (config.core && config.core !== "auto") return config.core;
   const ov = store.get(["emulator", "cores", systemId].join("."));
-  return ov || SYSTEM_BY_ID[systemId]?.ejsCore || systemId;
+  if (ov && ov !== "auto") return ov;
+  const declared = SYSTEM_BY_ID[systemId]?.ejsCore || systemId;
+  // "auto" is the homebrew shelf: one shelf, many consoles. Ask the extension
+  // which console owns it; if nobody claims it, return null and let the loader
+  // guess, rather than fetching a core literally named "auto".
+  return declared === "auto" ? coreForExt(config.ext || config.fileName) : declared;
+}
+
+/**
+ * Extension -> core, derived from the same table that lists what each deck
+ * accepts, so it cannot drift away from the UI. Archives are unknowable here:
+ * a .zip could hold any system, and guessing wrong is worse than letting the
+ * loader (or the player, from the deck's config) decide.
+ */
+export function coreForExt(extOrName) {
+  const raw = String(extOrName || "").toLowerCase();
+  const ext = (raw.match(/\.([a-z0-9]+)$/) || [])[1] || raw;
+  if (!ext || ext === "zip" || ext === "7z") return null;
+  for (const s of SYSTEMS) {
+    if (s.id === "homebrew" || s.ejsCore === "auto") continue;
+    if ((s.exts || []).includes(ext)) return s.ejsCore || null;
+  }
+  return null;
 }
 
 /**

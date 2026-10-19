@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | arcade ROM - accepted extensions: `.zip`, `.7z`, `.fbneo`, `.chd`, `.rom` |
-| Core | `fbneo` |
+| Core | `fbneo`; also selectable: `mame2003_plus`, `mame2003`, `neogeo`, `genesis_plus_gx` |
 | Buttons | Arcade 6-button (Vewlylick) (two rows of three - Street Fighter / KOF / GGXX) - 14 inputs |
 | Other layouts | Arcade 4-button, Arcade 8-button, Neo Geo AES pad, Twin-stick (arcade), Trackball + buttons, Arcade light gun |
 | Aspect | 4:3 - native 304x224 |

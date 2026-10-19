@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | disc image - accepted extensions: `.cue`, `.chd`, `.bin`, `.pbp`, `.exe`, `.m3u`, `.cbn`, `.zip` |
-| Core | `psx` |
+| Core | `psx`; also selectable: `pcsx_rearmed`, `mednafen_psx_hw`, `swanstation` |
 | Buttons | PlayStation controller (SCPH-1080 - digital only, shapes on the face buttons) - 19 inputs |
 | Other layouts | DualShock (analog + force feedback), PS1 + Neo Geo 4-shot, GunCon + D-pad, Sega Mouse + D-pad, Multitap 4-player |
 | Aspect | 4:3 - native 320x240 |

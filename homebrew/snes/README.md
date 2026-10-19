@@ -17,7 +17,7 @@ dialog, no vault step, because the file is served from this origin.
 | | |
 | --- | --- |
 | Media | cartridge - accepted extensions: `.sfc`, `.smc`, `.fig`, `.swc`, `.bin`, `.zip`, `.7z` |
-| Core | `snes` |
+| Core | `snes`; also selectable: `bsnes`, `snes2010`, `snes2005` |
 | Buttons | SNES Controller (SNS-005 - the four-face-button template) - 12 inputs |
 | Other layouts | Super Famicom pad, SNES Mouse + D-pad, NES/SNES scope + D-pad |
 | Aspect | 4:3 - native 256x224 |

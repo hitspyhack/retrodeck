@@ -271,6 +271,32 @@ async function deepPass() {
     await visit("#/", [], "leave the bundled route");
   }
 
+  // 5c. the "Homebrew & Public Domain" shelf holds files from many consoles, so
+  // its core is resolved from the file. It must never hand the loader a core
+  // named "auto" (that is a 404 for cores/auto.js) and never guess for a .zip.
+  {
+    const { pickCore, coreForExt } = await import("../js/core/emulator.js");
+    const got = {
+      nesFile: pickCore("homebrew", { ext: "nes" }),
+      snesName: pickCore("homebrew", { fileName: "Demo Game (World).sfc" }),
+      zipFile: pickCore("homebrew", { ext: "zip" }),
+      forced: pickCore("homebrew", { core: "gbc", ext: "nes" }),
+      normalShelf: pickCore("gb", {}),
+    };
+    const okCore = got.nesFile === "nes" && got.snesName === "snes" && got.zipFile === null && got.forced === "gbc" && got.normalShelf === "gb";
+    console.log(`${okCore ? "ok  " : "FAIL"}  homebrew shelf resolves the core from the file  ${JSON.stringify(got)}`);
+    allOk = okCore && allOk;
+    const { SYSTEMS } = await import("../js/data/systems.js");
+    const auto = SYSTEMS.filter((sys) => pickCore(sys.id, { ext: "bin" }) === "auto").map((sys) => sys.id);
+    console.log(`${auto.length ? "FAIL" : "ok  "}  no deck asks for a core called auto                ${auto.join(",") || "(26 decks resolve a real core)"}`);
+    allOk = (auto.length === 0) && allOk;
+    // every extension the shelf accepts must belong to a console it can name
+    const hb = SYSTEMS.find((sys) => sys.id === "homebrew");
+    const orphans = (hb.exts || []).filter((e) => !["zip", "7z"].includes(e) && !coreForExt(e));
+    console.log(`${orphans.length ? "FAIL" : "ok  "}  homebrew extensions all map to a core            ${orphans.join(",") || hb.exts.length + " extensions"}`);
+    allOk = (orphans.length === 0) && allOk;
+  }
+
   // 6. settings: warm-cache button and key capture must not throw
   await visit("#/settings", ["Keyboard map"], "settings (deep)");
   const view = d.getElementById("view");
