@@ -1,0 +1,202 @@
+# RetroDeck
+
+A pocket full of consoles, in a web page. 26 systems, 61 hardware models, 78
+controller layouts, 50 skins, 488 classic titles indexed — and six original
+games that are playable the moment you open the page, because they were written
+for this repository and ship inside it.
+
+It is a real emulator front-end, not a gallery: pick a Game Boy, and you get a
+DMG-01 with its 2.6:2.4 screen box, four shades of green unless you say
+otherwise, a diagonal A/B pad, a `4× AA` battery line on the shell and a
+start/select pair you can reach with your thumbs on a phone. Pick the Mega
+Drive and the buttons, the aspect ratio, the core and the 6-button layout all
+change with it. Every one of those choices is a per-model and per-game setting,
+stored on your device.
+
+- **No build step, no dependencies.** Plain ES modules, one tiny static server,
+  zero npm packages at runtime. `node_modules` never appears in this repo.
+- **No bundler, no framework, no CDN for the UI.** The only network dependency
+  is the emulator runtime, which you can mirror into `vendor/` in one command.
+- **Nothing you import leaves the device.** Files go into IndexedDB on your own
+  origin; settings into `localStorage`. There is no backend, no account, no
+  analytics, no telemetry.
+
+## Run it
+
+```sh
+npm run build      # index the catalogue + anything in homebrew/ (no deps needed)
+npm start          # http://0.0.0.0:4173  (npm run dev is the same thing)
+```
+
+Then open `http://localhost:4173`. For the threads-capable cores
+(Nintendo 64, PPSSPP, some Saturn and PSX builds) the browser wants
+`SharedArrayBuffer`, which needs cross-origin isolation:
+
+```sh
+npm run vendor:serve      # server.mjs --threads -> COOP/COEP headers
+```
+
+## Play it right now
+
+Six games live in `js/games/`, written from scratch for this project: original
+code, original art, original audio, no ROM required, no emulator core either —
+they run on a 300-line canvas engine with a fixed 60 Hz step, and they use the
+same virtual pad, the same skins and the same configuration layer as cartridge
+games.
+
+| Game | Deck it wears | What it is |
+| --- | --- | --- |
+| **Maze Chomp** | arcade 4-way | a maze chase with a generator, not a maze copied from anywhere |
+| **Blastr Zone** | NES | grid bombing, 8-way, four enemies with different appetites |
+| **Blitz Hog** | Mega Drive 3 | a momentum platformer with a boar that cannot stop quickly |
+| **Brick Storm** | NES | wall breakers, patterns per level, one power-up that matters |
+| **Stack Drop** | Game Boy | ten columns, seven shapes, no mercy |
+| **Star Lancer** | arcade 4-way | vertical shooter, wave patterns, a boss every fifth wave |
+
+Everything else in the library is an *index* of classic titles — the metadata,
+the year, the player count, the quirks ("battery save", "needs multi-tap",
+"6-button pads"). To play those you supply your own copy of a file you are
+allowed to hold, and RetroDeck runs it. This project ships no game files,
+hosts none, and links to none; see [`NOTICE.md`](NOTICE.md).
+
+If you have freely licensed homebrew of your own, drop it in
+`homebrew/<system>/` and run `npm run build` — it becomes a real catalogue
+entry that plays with no import step and works offline. [docs/ADDING-GAMES.md](docs/ADDING-GAMES.md).
+
+## On a phone
+
+`manifest.webmanifest` + a service worker make it installable. On Android
+(Chrome) use the browser menu → *Install app*; on iOS (Safari) use *Share → Add
+to Home Screen*. After the first load the interface works with the radio off —
+only the emulator payload needs to have been cached or vendored (see below).
+The player is built for thumbs first: the pad floats over the picture, the
+screen keeps its hardware aspect ratio, double-tap opens the core's own menu,
+and holding the phone sideways swaps the pad to left/right edges.
+
+## What "model console" actually means here
+
+```
+js/data/systems.js   26 systems: cores, extensions, aspect, palettes, shaders,
+                     BIOS requirements, the button set, hardware features
+js/data/models.js    61 revisions: DMG-01 vs Pocket vs Light, AGB-001 vs SP
+                     (front-lit, ir), NES-001 vs Top Loader vs Compoboy,
+                     every PS One/SCPH revision, Nomad, Gambler, the Duo…
+js/data/layouts.js   78 controller layouts in one 100×46 unit field, each with
+                     its own widget geometry (dpad style, nub travel, 6-button
+                     rows, trackballs, light guns, keybeds, VMU screens)
+js/data/skins.js     50 skins (22 CSS variables each) + 10 aftermarket ones,
+                     plus the accent a model wants
+js/core/shell.js     17 SVG shell templates; every model draws its own hardware
+                     and the screen box that the game is placed inside
+```
+
+A model is not a picture: `buildShell(model)` returns the geometry that decides
+where the canvas goes, which pad is offered, which skin is default, and what
+`EJS_*` options are passed to the core. The same table drives the library
+cards, the deck screen, the config form and the player, which is why the DMG
+always looks like a DMG.
+
+## Configuration ladder
+
+```
+defaults  →  system  →  game            (store.resolvedFor)
+```
+
+Per system and per game you can set: model, core, controller layout, key map,
+shader, palette, aspect ratio, integer scaling, screen rotation, save-state
+slot behaviour, rewind, fast-forward, volume, rumble, haptics, pad size and
+opacity, BIOS file, whether the emulator's own menu is reachable, and the
+`EJS_*` source (CDN or `vendor/`). Settings are text, so they diff, sync and
+commit: **Settings ▸ Your data ▸ Export** gives you one JSON file; **Import**
+puts it back.
+
+## Saving
+
+Save states (F2 / the 💾 button, ten slots, each with a screenshot), battery
+SRAM (captured on quit *and* on the core's own save event), screenshots to
+your photo library, and a rewind buffer you can dial from 0 to 40 frames. All
+of it is in the same IndexedDB vault as your files, and every record shows up
+in **Cartridges ▸ Save states** where you can delete or export one.
+
+## Going fully offline
+
+```sh
+npm run vendor                 # the 21 cores the app offers
+npm run vendor -- --all        # everything the runtime publishes
+npm run vendor -- --cores nes,gambatte,genesis_plus_gx
+```
+
+That mirrors the runtime payload into `vendor/data/` - tens to a couple of
+hundred MB, depending on which cores you ask for - git-ignored, resumable,
+idempotent, and verified against a local mirror by `npm test`. Then
+choose *./vendor (self-hosted)* under **Settings ▸ Emulator ▸ Payload source** and the app needs
+nothing but its own origin — the right setting for a phone, a classroom, a
+museum kiosk or a plane.
+
+## Tests
+
+```sh
+npm test          # 16 checks, ~5 s, no dependencies
+npm run test:fast  # static checks only
+npm run audit     # which classes the JS renders vs what CSS defines
+```
+
+What it proves is deliberate, because a project with no build step has no
+compiler to catch drift:
+
+1. `node --check` on all 38 modules.
+2. Every model's `tpl`/`pad`/`skins` reference resolves; `buildShell` renders
+   all 61 shells and returns a sane screen box for each.
+3. Every pad id a system advertises exists in `layouts.js`; no widget escapes
+   its field; button `ejs` indexes are within the core's table; key entries are
+   real `KeyboardEvent.code` values; `controlScheme` names are ones EmulatorJS
+   accepts (anything else is dropped rather than guessed).
+4. Every skin supplies the CSS variables the shell and pad read, in parseable
+   colours.
+5. `js/data/games.generated.js` is byte-for-byte re-derivable from
+   `data/source/games.tsv` + `homebrew/`, ids are unique, no row carries a
+   remote file path, and the per-system tallies add up.
+6. The six built-in games are simulated for 300 frames each (input profiles,
+   scoring, level flow, game-over) in `tools/sim.mjs`.
+7. **The whole app boots headlessly**: `tools/dom-smoke.mjs` installs a ~400-line
+   DOM shim, imports `js/app.js`, visits every route, mounts each built-in,
+   imports a fake Game Boy image into the vault, attaches it to a catalogue
+   entry, opens the game sheet, presses a pad button, saves a state through the
+   real toolbar, captures a key into the keyboard map and leaves the player —
+   asserting that every view produced markup instead of throwing.
+8. No document anywhere links to game files this project does not have.
+
+## Layout
+
+```
+index.html            one page, five tabs, the player overlay
+manifest.webmanifest  installable PWA
+sw.js                 cache + warm-the-runtime messages
+css/                  tokens, pad, shell, app  (no preprocessor)
+js/core/              store, idb vault, ROM sniffing, cover art, shell art,
+                      virtual deck, EmulatorJS player
+js/data/              systems, models, layouts, skins, generated catalogue
+js/games/             the built-in engine + six original titles
+js/views/             home, library, decks, deck, vault, settings, player
+js/ui.js              100-line element builder, sheets, toasts, file pickers
+server.mjs            static server: wasm/mjs types, ETag, ranges, COOP/COEP
+tools/                build, test, sim, css audit, icons, vendor mirror
+homebrew/<system>/    drop freely-licensed files here, then npm run build
+docs/                 PLAYING.md, ADDING-GAMES.md
+```
+
+## Browsers
+
+Any browser with ES modules, IndexedDB and WebAssembly: Chrome/Edge 90+,
+Safari 15+, Firefox 90+, and their mobile equivalents. `SharedArrayBuffer`
+(needed by a few cores) requires the cross-origin-isolated context that
+`npm run vendor:serve` sets up. Everything except the emulator payload works
+without WebAssembly — which is how the built-in games, the vault, the decks and
+the settings run in a test runner with no browser at all.
+
+## Licence
+
+MIT for everything in this repository (see [`LICENSE`](LICENSE)). The emulator
+runtime and the cores it loads are upstream projects under their own licences;
+game data is not included and is not something this project helps you obtain.
+Read [`NOTICE.md`](NOTICE.md) — it is three paragraphs.

@@ -1,0 +1,37 @@
+{
+  "name": "retrodeck",
+  "version": "1.0.0",
+  "description": "RetroDeck - a mobile-first, web-based retro console deck: hardware-accurate console models, skins, per-console controllers and a browser emulator front-end.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "node server.mjs --port 4173",
+    "start": "node server.mjs --port 4173",
+    "build": "node tools/build-catalog.mjs",
+    "vendor": "node tools/vendor-emulatorjs.mjs",
+    "test": "node tools/test.mjs",
+    "check": "node tools/build-catalog.mjs && node tools/test.mjs",
+    "sim": "node tools/sim.mjs",
+    "vendor:serve": "node server.mjs --port 4173 --threads",
+    "audit": "node tools/css-audit.mjs",
+    "test:fast": "node tools/test.mjs --fast"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "emulation",
+    "retro",
+    "gameboy",
+    "nes",
+    "snes",
+    "gba",
+    "n64",
+    "genesis",
+    "playstation",
+    "webassembly",
+    "emulatorjs",
+    "pwa"
+  ],
+  "license": "MIT"
+}

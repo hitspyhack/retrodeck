@@ -1,0 +1,97 @@
+# dependencies / build residue
+node_modules/
+dist/
+.cache/
+.tmp/
+coverage/
+
+# EmulatorJS payload pulled by `npm run vendor` (WASM cores, hundreds of MB)
+vendor/
+
+# ---------------------------------------------------------------------------
+# Nothing below is ever committed: your files, cartridge images, BIOS images,
+# disc dumps, save states.
+#
+# Note `*.md` - it is the Mega Drive / Genesis extension, and it therefore also
+# swallows Markdown. The documentation is re-allowed at the bottom of this file;
+# if you add a .md file somewhere new and `git status` stays silent, that is why.
+# ---------------------------------------------------------------------------
+roms/
+bios/
+saves/
+
+# --- cartridge and disc image extensions ---
+*.nes
+*.fds
+*.unf
+*.sfc
+*.smc
+*.fig
+*.gb
+*.gbc
+*.gba
+*.agb
+*.nds
+*.dsi
+*.n64
+*.z64
+*.v64
+*.u64
+*.ndd
+*.vb
+*.vboy
+*.md
+*.gen
+*.smd
+*.sms
+*.gg
+*.32x
+*.pce
+*.sgx
+*.cue
+*.chd
+*.iso
+*.gdi
+*.cdi
+*.cso
+*.pbp
+*.a26
+*.a78
+*.lnx
+*.ngp
+*.ngpc
+*.ws
+*.wsc
+*.d64
+*.t64
+*.prg
+*.p00
+*.tap
+*.crt
+*.dosbox
+*.scummvm
+*.rom
+*.bin
+*.u
+*.e
+*.zip
+*.7z
+
+# --- the homebrew drop folders: images stay on your machine, docs stay in git ---
+homebrew/**/*
+!homebrew/**/
+!homebrew/**/README.md
+
+# --- documentation that `*.md` above would otherwise hide ---
+!README.md
+!NOTICE.md
+!docs/
+!docs/**
+
+# editors and OS cruft
+.DS_Store
+Thumbs.db
+*.log
+.env
+.idea/
+.vscode/

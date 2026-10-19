@@ -1,0 +1,27 @@
+{
+  "name": "RetroDeck — a pocket full of consoles",
+  "short_name": "RetroDeck",
+  "description": "Offline-first emulator deck for phones: 26 systems, 61 console models, skins, per-model controls and a 488-title index. Bring your own cartridges, or play six built-in originals.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0a0d14",
+  "theme_color": "#0a0d14",
+  "categories": ["games", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Continue", "url": "./#/", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Play Maze Chomp", "url": "./#/play/builtin:chomp", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Add a cartridge", "url": "./#/vault", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Controls", "url": "./#/settings", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

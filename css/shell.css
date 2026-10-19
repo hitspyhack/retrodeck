@@ -1,0 +1,192 @@
+/* ==========================================================================
+   Console shells.
+
+   buildShell() returns an inline SVG in a 100-unit viewBox plus the geometry of
+   the screen inside it. The emulator/canvas is absolutely positioned over that
+   screen box using the percentages from screenStyle(), which is why the same
+   artwork works for a Game Boy in portrait and a cabinet in landscape.
+   ========================================================================== */
+
+.shell {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
+  border-radius: var(--r-lg);
+  isolation: isolate;
+}
+.shell__art {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* the SVG paints with var(--shell) etc, so a skin change is instant */
+  filter: drop-shadow(0 10px 18px #0006);
+}
+.shell__screen {
+  position: absolute;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #05070b;
+  box-shadow: 0 0 0 1px #000, inset 0 0 12px #000c;
+  container-type: size;
+}
+.shell__screen::after {
+  /* glass sheen: subtle, and off when the player wants raw pixels */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(118deg, #ffffff12 0 22%, #ffffff04 22% 46%, #0000 46%);
+  opacity: var(--glass-strength, 0.5);
+}
+.shell[data-glass="off"] .shell__screen::after { opacity: 0; }
+
+.shell__second {
+  position: absolute;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #0a0f18;
+  box-shadow: 0 0 0 1px #000;
+}
+
+/* the mini "screen off" state used on deck cards */
+.shell--thumb { max-width: 190px; }
+.shell--thumb .shell__art { filter: none; }
+
+/* ----------------------------------------------------------------- player */
+.player {
+  --pad-h: 40vh;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-stage);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #1b2233, #0a0d14 62%),
+    var(--bg);
+  overscroll-behavior: none;
+}
+.player__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  min-height: calc(var(--bar-h) + var(--sa-t));
+  padding: var(--sa-t) 8px 0;
+  background: #0a0d1499;
+  backdrop-filter: blur(8px);
+  border-bottom: var(--line);
+}
+.player__title { min-width: 0; flex: 1; }
+.player__title b {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-2);
+}
+.player__title span { font-size: var(--fs-0); color: var(--ink-3); }
+.player__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 8px;
+  touch-action: none;
+}
+.player__stage .shell { max-width: min(94vw, 620px); }
+.player__pad {
+  min-height: 0;
+  padding: 0 0 max(var(--sa-b), 6px);
+}
+
+/* landscape: screen owns the middle, pad floats over the bottom edge */
+.player.is-landscape { grid-template-rows: auto 1fr; }
+.player.is-landscape .player__stage { padding: 0; }
+.player.is-landscape .player__stage .shell {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  margin: 0;
+}
+.player.is-landscape .player__stage .shell__art { height: 100%; width: auto; margin-inline: auto; }
+.player.is-landscape .player__stage .shell { display: grid; place-items: center; }
+.player.is-landscape .player__pad { position: static; }
+.player[data-theater="1"] .shell__art { opacity: 0.08; }
+.player[data-theater="1"] .player__stage .shell,
+.player[data-theater="1"] .player__stage .shell__screen { max-width: 100vw; }
+
+/* ------------------------------------------------------ the game surfaces */
+.ejs-frame,
+.game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+  image-rendering: pixelated;
+}
+.game-canvas { object-fit: contain; }
+
+/* CRT-ish overlay; purely CSS so it costs nothing on weak phones */
+.shell__screen[data-crt="on"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    repeating-linear-gradient(#0000 0 2px, #00000038 2px 3px),
+    radial-gradient(120% 120% at 50% 50%, #0000 58%, #00000072 100%);
+}
+
+.player__load {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  justify-items: center;
+  background: #05070bee;
+  text-align: center;
+  padding: 24px;
+}
+.player__load .bar { width: min(320px, 70vw); height: 6px; border-radius: 99px; background: var(--panel-2); overflow: hidden; }
+.player__load .bar i { display: block; height: 100%; width: 25%; background: var(--accent); animation: slide 1.1s ease-in-out infinite; }
+@keyframes slide { 0% { transform: translateX(-100%) } 100% { transform: translateX(420%) } }
+
+/* --------------------------------------------------------- deck (model) view */
+.deck {
+  display: grid;
+  gap: var(--gap);
+}
+.deck__shell { position: relative; }
+.deck__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--gap);
+}
+.deck__panel {
+  background: var(--panel);
+  border: var(--line);
+  border-radius: var(--r);
+  padding: var(--gap);
+}
+.skins {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
+}
+.skin {
+  position: relative;
+  padding: 6px 6px 20px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--edge);
+  background: var(--panel-2);
+  cursor: pointer;
+  text-align: left;
+}
+.skin i { display: block; height: 26px; border-radius: 4px; background: linear-gradient(150deg, var(--shellHi), var(--shell) 45%, var(--shell2)); box-shadow: inset 0 0 0 1px #0006; }
+.skin u { display: flex; gap: 3px; margin-top: 5px; text-decoration: none; }
+.skin u b { width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1px #0007; }
+.skin span { position: absolute; left: 6px; right: 6px; bottom: 4px; font-size: var(--fs-0); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.skin.is-on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }

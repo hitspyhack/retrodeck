@@ -1,0 +1,514 @@
+# RetroDeck reference index - METADATA ONLY. No ROMs, no downloads, no links.
+# Format: system|Title|year|genre|players|score|note
+# `score` is an indicative community/legacy rating used for sorting, not a
+# citation-grade review average. Everything here exists to help you organise
+# the cartridge images you are legally entitled to load.
+
+# ------------------------------------------------------------ NES (HVC/NES)
+nes|Super Mario Bros.|1985|Platformer|2|9.4|2P alternate turns
+nes|Super Mario Bros.: The Lost Levels|1986|Platformer|2|8.4|The SMB2 Japan version
+nes|Super Mario Bros. 3|1988|Platformer|2|9.3|Cartridge fan; 2P alternating
+nes|Balloon Fight|1984|Arcade|2|8.6|
+nes|Ice Climber|1985|Platformer|2|8.0|
+nes|Mario Bros.|1983|Platformer|2|8.1|Original Luigi debut
+nes|The Legend of Zelda|1986|Adventure|1|9.5|Battery save
+nes|Zelda II: The Adventure of Link|1987|Action RPG|1|7.8|Battery save
+nes|Mega Man|1987|Action|1|8.4|
+nes|Mega Man 2|1988|Action|1|9.2|The one with the soundtrack
+nes|Mega Man 3|1990|Action|1|8.9|
+nes|Castlevania|1986|Action|1|8.8|
+nes|Castlevania II: Simon's Quest|1987|Action RPG|1|7.4|
+nes|Castlevania III: Dracula's Conquest|1990|Action|1|8.9|VRC5 mapper
+nes|Contra|1988|Run 'n gun|2|9.0|2P co-op; 30 lives
+nes|Super C|1990|Run 'n gun|2|8.6|2P co-op
+nes|Metroid|1986|Adventure|1|8.9|Battery save
+nes|Ninja Gaiden|1988|Action|1|8.6|
+nes|Punch-Out!!|1987|Sports|1|9.0|Requires the NES Advantage or A-mashing
+nes|Duck Hunt|1984|Arcade|1|8.2|Zapper only
+nes|Excitebike|1984|Racing|1|8.1|
+nes|Tetris|1989|Puzzle|2|9.1|Nintendo cartridge version
+nes|Dr. Mario|1990|Puzzle|2|8.7|2P versus
+nes|Final Fantasy|1987|RPG|1|8.5|Battery save
+nes|Dragon Warrior|1986|RPG|1|8.0|Battery save
+nes|River City Ransom|1989|Beat 'em up|2|8.8|2P co-op
+nes|Rampage|1988|Action|2|7.9|2P co-op
+nes|Tecmo Bowl|1989|Sports|2|8.4|2P
+nes|Ninja Kid|1986|Action|1|7.2|
+nes|Galaga|1985|Arcade|2|8.0|NES port
+nes|Pac-Man|1984|Arcade|2|6.9|NES port - the infamous one
+nes|Defender|1988|Shooter|1|7.1|
+nes|Battle City|1985|Shooter|2|7.6|2P; tank editor
+nes|Kid Niki: Radical Ninja|1987|Action|2|7.5|
+nes|Bucky O'Hare|1992|Run 'n gun|2|8.0|
+# ------------------------------------------------------------------- Super Famicom / SNES
+snes|Super Mario World|1990|Platformer|2|9.5|2P alternate; cape feather
+snes|Super Mario Kart|1992|Racing|2|9.2|2P split-screen; Mode 7
+snes|F-ZERO|1990|Racing|1|8.9|Mode 7
+snes|Star Fox|1993|Shooter|1|8.6|Super FX chip
+snes|Star Fox 2|1995|Shooter|2|8.4|Unreleased until the Classic Mini
+snes|The Legend of Zelda: A Link to the Past|1991|Adventure|1|9.6|
+snes|Super Metroid|1994|Metroidvania|1|9.7|
+snes|Chrono Trigger|1995|RPG|1|9.6|
+snes|Final Fantasy VI|1994|RPG|1|9.5|
+snes|Final Fantasy III (US)|1994|RPG|1|8.6|FF6 in Japan
+snes|EarthBound|1994|RPG|1|9.0|Battery save
+snes|Super Mario RPG: Legend of the Seven Stars|1996|RPG|1|9.2|
+snes|Donkey Kong Country|1994|Platformer|2|9.0|SFX chip
+snes|Donkey Kong Country 2: Diddy's Kong Quest|1995|Platformer|2|9.1|
+snes|Kirby's Dream Land 2|1995|Platformer|1|8.5|
+snes|Kirby Super Star|1996|Platformer|2|9.0|2P co-op
+snes|Yoshi's Island|1995|Platformer|1|9.3|
+snes|Super Castlevania IV|1991|Action|1|8.8|1P; the whip is the whole game
+snes|Mega Man X|1993|Action|1|9.0|
+snes|Mega Man X2|1994|Action|1|8.5|
+snes|Street Fighter II Turbo: Hyper Fighting|1993|Fighting|2|9.0|2P versus; 6-button pads
+snes|Super Street Fighter II Turbo|1994|Fighting|2|9.1|
+snes|Mortal Kombat II|1994|Fighting|2|8.3|
+snes|Killer Instinct|1995|Fighting|2|8.0|
+snes|Secret of Mana|1993|Action RPG|3|9.0|Link up to 3P (multi-tap)
+snes|Terranigma|1995|Action RPG|1|9.1|EU-only release
+snes|ActRaiser|1991|Action|1|8.4|Simulation half
+snes|Illusion of Gaia|1993|Action RPG|1|8.7|
+snes|Breath of Fire II|1994|RPG|1|8.6|
+snes|Panel de Pon|1995|Puzzle|2|8.7|2P versus; Tetris Attack in US
+snes|Super Bomberman 2|1995|Action|4|8.8|2-4P with multi-tap
+snes|Bust A Move|1998|Puzzle|2|8.2|2P versus
+snes|Pilotwings|1990|Simulation|1|8.0|Mode 7 + FX
+snes|Super Mario All-Stars|1993|Platformer|2|9.0|Remaster bundle
+snes|Mario Paint|1992|Creative|1|8.6|SNES Mouse
+snes|Wild Guns|1994|Shooter|2|8.3|2P co-op; supports the SNES Mouse
+snes|OgreBattle: Let Us Cling Together|1995|Strategy|1|9.3|JP only
+# ------------------------------------------------------------------- Nintendo 64
+n64|Super Mario 64|1996|Platformer|1|9.7|4:3; 3P? - analog stick required
+n64|The Legend of Zelda: Ocarina of Time|1998|Adventure|1|9.8|Controller Pak save
+n64|The Legend of Zelda: Majora's Mask|2000|Adventure|1|9.4|Expansion Pak optional
+n64|GoldenEye 007|1997|Shooter|4|9.2|1-4P split-screen; Rumble Pak
+n64|Perfect Dark|2000|Shooter|4|9.1|4P; Memory Expansion Pak needed for some modes
+n64|Mario Kart 64|1996|Racing|4|8.8|4P split-screen; rumble
+n64|F-Zero X|1998|Racing|4|8.6|20-racer; Expansion Pak
+n64|Star Fox 64|1997|Shooter|2|9.0|Rumble Pak; 2P versus
+n64|Lylat Wars (Star Fox 64 EU)|1997|Shooter|2|8.9|PAL text differences
+n64|Banjo-Tooie|2000|Platformer|2|8.8|2P with Memory Expansion
+n64|Donkey Kong 64|1999|Platformer|1|7.8|Expansion Pak required
+n64|Paper Mario|2000|RPG|1|9.1|
+n64|Mario Story (Paper Mario JP)|2000|RPG|1|9.1|same game, JP
+n64|Kirby 64: The Crystal Shards|2000|Platformer|2|8.3|2P co-op
+n64|Pokémon Snap|1999|Simulation|1|8.0|Transfer Pak
+n64|Pokémon Stadium|1998|Strategy|2|7.6|Transfer Pak for GB carts; 4P minigames
+n64|Hey You, Pikachu!|1998|Simulation|1|7.4|Voice Recognition Unit
+n64|Tony Hawk's Pro Skater 2|2000|Sports|2|8.9|N64 port
+n64|Conker's Bad Fur Day|2001|Platformer|2|8.8|Voice commands; Expansion Pak
+n64|Wave Race 64|1996|Racing|2|8.5|2P split-screen
+n64|1080° Snowboarding|1998|Sports|2|8.6|
+n64|Mario Tennis|2000|Sports|2|8.2|
+n64|Turok 2: Seeds of Light|1998|Shooter|2|8.1|2P split-screen
+n64|Doom 64|1997|Shooter|1|8.4|
+n64|Quake II|1999|Shooter|2|7.0|2P split
+n64|Mario Party 2|1999|Board|4|8.2|4P
+n64|Space Station Silicon Valley|1998|Puzzle|1|8.0|
+n64|Fighters Destiny|1998|Fighting|2|7.5|
+n64|AeroGauge|1997|Racing|2|7.6|
+n64|Body Harvest|1998|Action|1|7.2|
+# ------------------------------------------------------------------- Game Boy
+gb|Tetris|1989|Puzzle|2|9.4|2P with link cable
+gb|Super Mario Land|1989|Platformer|1|7.9|
+gb|Super Mario Land 2: 6 Golden Coins|1992|Platformer|1|8.8|Wario debut
+gb|Wario Land: Super Mario Land 3|1994|Platformer|1|8.9|
+gb|The Legend of Zelda: Link's Awakening|1993|Adventure|1|9.3|Link cable trading
+gb|Metroid II: Return of Samus|1991|Adventure|1|8.0|
+gb|Kirby's Dream Land|1992|Platformer|1|7.7|
+gb|Kirby's Dream Land 2|1995|Platformer|2|8.4|2P with link
+gb|Dr. Mario|1990|Puzzle|2|8.5|Link cable 2P
+gb|Pokémon Red|1996|RPG|2|8.9|Link cable trade/battle; battery save
+gb|Pokémon Blue|1996|RPG|2|8.9|
+gb|Pokémon Yellow: Special Pikachu Edition|1998|RPG|2|8.8|TB901 printer support
+gb|Donkey Kong|1994|Platformer|1|8.6|
+gb|Gargoyle's Quest|1990|Action|1|8.1|
+gb|Mega Man: Dr. Wily's Revenge|1991|Action|1|7.6|
+gb|Castlevania: The Adventure|1989|Action|1|7.3|
+gb|F-1 Race|1990|Racing|1|7.1|Four-player link
+gb|Alleyway|1989|Arcade|1|6.6|
+gb|Baseball|1989|Sports|2|6.8|
+gb|Kwirk!|1995|Puzzle|1|6.9|
+gb|Game Boy Wars|1997|Strategy|2|7.4|
+gb|Solar Striker|1990|Shooter|1|7.2|
+gb|Qix|1990|Puzzle|1|7.5|
+gb|Tetris DX|1998|Puzzle|2|9.0|GBC enhanced; link 2P
+# ------------------------------------------------------------------- Game Boy Color
+gbc|Pokémon Gold|1999|RPG|2|9.2|Battery save; link
+gbc|Pokémon Silver|1999|RPG|2|9.2|
+gbc|Pokémon Crystal Version|2000|RPG|2|9.0|Infrared + mobile
+gbc|The Legend of Zelda: Oracle of Ages|2001|Adventure|2|8.7|Link-cable password trade
+gbc|The Legend of Zelda: Oracle of Seasons|2001|Adventure|2|8.7|
+gbc|Wario Land II|1998|Platformer|1|8.8|
+gbc|Wario Land 3|2000|Platformer|1|9.0|
+gbc|Wario Land 4|2001|Platformer|1|9.1|
+gbc|Super Mario Bros. Deluxe|1999|Platformer|2|8.6|
+gbc|The Legend of Zelda: Link's Awakening DX|1993|Adventure|1|9.4|DX colour + dungeon editor
+gbc|Mega Man Xtreme|2000|Action|1|7.8|
+gbc|Metal Gear Solid|1999|Stealth|1|7.7|A GBC game, astonishingly
+gbc|Bomberman Quest|1998|Action|1|8.3|
+gbc|Dragon Quest Monsters: Terry's Wonderland|1998|RPG|1|8.4|Battery save; link
+gbc|Kirby Tilt 'n' Tilt|2000|Platformer|1|8.1|Tilt sensor
+gbc|Tetris DX|1998|Puzzle|2|9.0|link 2P
+gbc|Pac-Man: Special Edition|2001|Arcade|1|6.8|
+# ------------------------------------------------------------------- Game Boy Advance
+gba|Pokémon Ruby|2002|RPG|2|8.8|Link cable trade; battery save
+gba|Pokémon Sapphire|2002|RPG|2|8.8|
+gba|Pokémon Emerald|2004|RPG|2|9.0|Battle Frontier; 2P via GBA link
+gba|Pokémon FireRed|2004|RPG|2|9.0|
+gba|Pokémon LeafGreen|2004|RPG|2|9.0|
+gba|Metroid Fusion|2002|Metroidvania|1|9.1|
+gba|Metroid: Zero Mission|2004|Metroidvania|1|8.8|
+gba|F-Zero: Maximum Velocity|2001|Racing|2|8.1|Link 2P
+gba|WarioWare, Inc.: Mega Microgame$|2003|Arcade|1|8.7|
+gba|Advance Wars|2001|Strategy|2|9.0|Link battle
+gba|Advance Wars 2: Black Hole Rising|2003|Strategy|2|8.8|
+gba|Golden Sun|2001|RPG|1|8.9|Link cable djinn swap
+gba|Golden Sun: The Lost Age|2002|RPG|1|8.9|
+gba|Mario & Luigi: Superstar Saga|2003|RPG|1|9.0|
+gba|Super Mario Advance 4: Super Mario Bros. 3|2003|Platformer|2|9.3|e-Reader cards; 2P
+gba|Kirby & the Amazing Mirror|2004|Metroidvania|4|8.6|4P with link cables
+gba|Castlevania: Circle of the Moon|2001|Action|1|8.3|
+gba|Castlevania: Aria of Sorrow|2003|Action|1|9.0|
+gba|Castlevania: Harmony of Dissonance|2002|Action|1|8.4|Link trade
+gba|Sonic Advance|2001|Platformer|4|7.6|4P link
+gba|Sonic Battle|2003|Fighting|2|7.4|
+gba|Sonic Advance 2|2002|Platformer|2|7.6|
+gba|Mega Man Battle Network|2001|Action RPG|2|8.4|Link battles
+gba|Fire Emblem: The Blazing Blade|2003|Strategy|2|8.9|Link + GBA Wireless
+gba|Fire Emblem: The Sacred Stones|2004|Strategy|2|8.5|
+gba|ChuChu Rocket!|2001|Puzzle|4|8.3|4P wireless
+gba|Koro Koro Puzzle: Happy Panels|2002|Puzzle|1|7.9|
+gba|Mr. Driller|2000|Puzzle|2|7.9|
+gba|Tony Hawk's Pro Skater 2|2001|Sports|1|8.6|
+gba|Harvest Moon: Friends of Mineral Town|2003|Simulation|1|8.2|
+gba|Yu-Gi-Oh! The Sacred Cards|2002|Card/Board|2|7.6|
+gba|Bomberman Jetters|2002|Action|2|7.5|
+# ------------------------------------------------------------------- Nintendo DS
+nds|New Super Mario Bros.|2006|Platformer|2|8.7|2P wireless minigames
+nds|Super Mario 64 DS|2004|Platformer|4|8.4|4P mini-games
+nds|Mario Kart DS|2005|Racing|4|9.0|4P wireless
+nds|Nintendogs|2005|Simulation|1|8.4|Microphone
+nds|Brain Age: Train Your Brain in Minutes a Day!|2005|Educational|1|7.5|Microphone + stylus
+nds|Professor Layton and the Curious Village|2007|Puzzle|1|8.7|
+nds|The Legend of Zelda: Phantom Hourglass|2007|Adventure|1|9.0|Stylus only
+nds|The Legend of Zelda: Spirit Tracks|2009|Adventure|1|8.6|
+nds|Phoenix Wright: Ace Attorney|2005|Adventure|1|8.8|
+nds|Castlevania: Dawn of Sorrow|2005|Action|1|8.9|Touch magic seals
+nds|Advance Wars: Dual Strike|2005|Strategy|2|9.0|
+nds|Pokémon Diamond|2006|RPG|2|8.4|Wireless trade/battle
+nds|Pokémon Pearl|2006|RPG|2|8.4|
+nds|Pokémon Platinum|2008|RPG|2|8.6|
+nds|Pokémon Black|2010|RPG|2|8.7|
+nds|Pokémon White|2010|RPG|2|8.7|
+nds|Dementium: The Ward|2007|Horror|1|7.6|
+nds|Kirby: Canvas Cursor|2005|Platformer|1|8.1|
+nds|Electroplankton|2006|Rhythm|1|8.2|
+nds|LEGO Star Wars: The Complete Saga|2007|Action|2|7.4|
+# ------------------------------------------------------------------- Virtual Boy
+vb|Virtual Boy Wario Land|1995|Platformer|1|8.0|
+vb|Mario's Tennis|1995|Sports|2|7.8|
+vb|Red Alarm|1995|Shooter|1|7.4|
+vb|Galactic Pinball|1995|Pinball|1|7.9|
+vb|The Mansion of Innsmouth|1995|Horror|1|6.8|
+vb|Waterworld|1995|Action|1|5.4|
+vb|3-D Tetris|1999|Puzzle|2|7.0|JP-only, late release
+# ------------------------------------------------------------------- Master System / Game Gear
+segaMS|Alex Kidd in Miracle World|1986|Platformer|1|8.5|Pause on the deck
+segaMS|Wonder Boy III: The Dragon's Trap|1989|Action|1|8.9|SMS-only
+segaMS|Phantasy Star|1987|RPG|1|8.7|
+segaMS|Out Run|1986|Racing|1|8.2|
+segaMS|Space Harrier|1986|Shooter|1|8.1|
+segaMS|Ghostbusters|1987|Action|1|7.4|
+segaMS|R-Type|1988|Shooter|1|8.0|
+segaMS|Golden Axe|1991|Beat 'em up|2|8.1|2P co-op
+segaMS|Sonic the Hedgehog|1991|Platformer|1|7.9|8-bit port
+segaMS|Bubble Bobble|1988|Action|2|7.7|2P co-op
+segaMS|Flicky|1984|Arcade|2|7.4|
+segaMS|Double Dragon|1992|Beat 'em up|2|6.9|
+segaGG|Sonic the Hedgehog|1991|Platformer|1|8.0|Backlit screen
+segaGG|Sonic the Hedgehog 2|1992|Platformer|1|7.8|
+segaGG|Columns|1990|Puzzle|2|8.3|
+segaGG|Land of Illusion Starring Mickey Mouse|1992|Action|1|8.1|
+segaGG|Shining Force Gaiden|1992|Strategy|1|8.2|
+segaGG|Road Rash|1995|Racing|1|7.4|
+segaGG|Ecco the Dolphin|1995|Adventure|1|7.6|
+segaGG|Mortal Kombat|1994|Fighting|2|6.6|
+segaGG|Flicky|1990|Arcade|1|7.0|
+segaGG|Galaga|1991|Arcade|1|6.8|
+# ------------------------------------------------------------------- Mega Drive / Genesis
+segaMD|Sonic the Hedgehog|1991|Platformer|1|9.0|Special stage spin-dash
+segaMD|Sonic the Hedgehog 3|1994|Platformer|1|8.7|
+segaMD|Sonic & Knuckles|1994|Platformer|1|8.9|Lock-on with Sonic 2/3
+segaMD|Streets of Rage 2|1992|Beat 'em up|2|9.1|2P co-op; Yuzo Koshiro
+segaMD|Streets of Rage 3|1994|Beat 'em up|2|8.5|2P co-op; adaptive music
+segaMD|Golden Axe|1989|Beat 'em up|2|8.4|2P co-op
+segaMD|Altered Beast|1988|Beat 'em up|2|7.6|
+segaMD|Phantasy Star IV: The End of the Millennium|1993|RPG|1|9.2|
+segaMD|Gunstar Heroes|1993|Run 'n gun|2|9.0|2P co-op
+segaMD|Toejam & Earl|1991|Action|2|8.1|2P co-op
+segaMD|Toejam & Earl in Panic on Funkotron|1993|Action|2|8.0|
+segaMD|Vectorman|1995|Run 'n gun|1|8.5|
+segaMD|Comix Zone|1995|Action|1|8.3|
+segaMD|Earthworm Jim|1994|Platformer|1|8.6|
+segaMD|Earthworm Jim 2|1995|Platformer|1|8.2|
+segaMD|Ristar|1995|Platformer|1|8.4|
+segaMD|Dynamite Headdy|1993|Action|2|8.6|
+segaMD|Shadow Dancer: The Secret of Shinobi|1990|Action|1|8.0|
+segaMD|Shinobi III: Return of the Ninja Master|1993|Action|1|8.7|
+segaMD|Kid Chameleon|1992|Platformer|1|8.0|
+segaMD|Road Rash II|1992|Racing|2|8.3|2P split
+segaMD|Columns|1990|Puzzle|2|8.6|
+segaMD|Ecco the Dolphin|1992|Adventure|1|8.2|
+segaMD|Landstalker: The Treasures of King Nole|1992|Action RPG|1|8.9|
+segaMD|QuackShot Starring Donald Duck|1991|Action|1|8.0|
+segaMD|Castle of Illusion Starring Mickey Mouse|1990|Platformer|1|8.2|
+segaMD|Mortal Kombat|1993|Fighting|2|8.1|2P versus
+segaMD|NBA Jam: Tournament Edition|1994|Sports|4|8.5|4P with Multitap
+segaMD|Mega Man: The Wily Wars|1994|Action|1|7.7|
+# ------------------------------------------------------------------- Sega CD / 32X
+segaCD|Sonic CD|1993|Platformer|1|8.8|CD audio; time travel
+segaCD|Snatcher|1992|Adventure|1|8.6|Hideo Kojima; needs BIOS
+segaCD|Lunar: The Silver Star|1992|RPG|1|8.7|
+segaCD|Silpheed|1993|Shooter|1|8.1|
+segaCD|Night Trap|1992|Action|1|6.4|The 1993 congressional hearings
+segaCD|Road Avenger|1993|Shooter|1|7.5|
+segaCD|Mad Stalker: Full Metal Force|1994|Shooter|1|7.9|
+segaCD|Ecco: The Tides of Time|1994|Adventure|1|8.4|
+segaCD|Spriggan|1996|Run 'n gun|1|8.2|
+sega32x|Sonic 3D Blast|1996|Platformer|1|8.0|Isometric
+sega32x|Knuckles' Chaotix|1995|Platformer|2|7.8|2P with 4-way cam
+sega32x|Doom|1994|Shooter|1|7.9|Better than the SNES one
+sega32x|Darxide|1995|Shooter|1|7.6|Vector-ish 3D
+sega32x|Shadow Squadron|1996|Shooter|1|7.8|
+sega32x|Tornado|1995|Shooter|1|6.9|
+# ------------------------------------------------------------------- Saturn / Dreamcast
+segaSaturn|Nights into Dreams|1996|Action|2|9.0|2P battle
+segaSaturn|Panzer Dragoon II Zwei|1996|Shooter|1|8.9|
+segaSaturn|Panzer Dragoon Saga|1998|RPG|1|9.3|US: 5,000 copies
+segaSaturn|Guardian Heroes|1996|Beat 'em up|3|8.8|3-5P with tap
+segaSaturn|Radiant Silvergun|1998|Shooter|1|9.0|
+segaSaturn|Virtua Fighter 2|1995|Fighting|2|8.9|2P versus
+segaSaturn|X-Men vs. Street Fighter|1997|Fighting|2|8.6|
+segaSaturn|Saturn Bomberman|1996|Action|10|8.7|10P with Multitaps!
+segaSaturn|Deep Fear|1998|Horror|1|7.4|
+segaSaturn|Shining the Holy Ark|1996|RPG|1|8.2|
+segaSaturn|Chou Aniki|1995|Action|2|7.4|2P co-op
+segaSaturn|Manx TT SuperBike|1995|Racing|2|7.9|
+dreamcast|Sonic Adventure|1998|Platformer|1|9.0|VMU Chao garden
+dreamcast|Sonic Adventure 2|2001|Platformer|2|8.9|2P battle; DC only
+dreamcast|Soulcalibur|1998|Fighting|2|9.4|2P versus; VMU
+dreamcast|Jet Set Radio|2000|Action|1|8.9|
+dreamcast|Shenmue|1999|Adventure|1|8.8|1999 budget
+dreamcast|Crazy Taxi|2000|Racing|1|8.5|
+dreamcast|Ikaruga|2001|Shooter|1|9.0|
+dreamcast|Skies of Arcadia|2000|RPG|1|9.1|
+dreamcast|Space Channel 5|1999|Rhythm|1|8.2|Voice
+dreamcast|Metropolis Street Racer|2000|Racing|1|8.6|
+dreamcast|Resident Evil Code: Veronica|2000|Horror|1|8.5|
+dreamcast|Phantasy Star Online|2000|Action RPG|4|8.4|4P via LAN/modem (modem not emulated)
+dreamcast|Marvel vs. Capcom 2: New Age of Heroes|2000|Fighting|2|9.0|
+dreamcast|D2|2000|RPG|1|6.9|
+# ------------------------------------------------------------------- PlayStation
+psx|Final Fantasy VIII|1999|RPG|1|8.8|
+psx|Final Fantasy IX|2000|RPG|1|9.2|
+psx|Metal Gear Solid|1998|Stealth|1|9.3|DualShock vibration
+psx|Resident Evil 2|1998|Horror|1|9.0|
+psx|Resident Evil 3: Nemesis|1999|Horror|1|8.3|
+psx|Silent Hill|1999|Horror|1|8.8|
+psx|Castlevania: Symphony of the Night|1997|Metroidvania|1|9.3|
+psx|Chrono Cross|1999|RPG|1|8.7|
+psx|Suikoden II|1998|RPG|1|9.1|
+psx|Xenogears|1998|RPG|1|8.9|
+psx|Vagrant Story|2000|RPG|1|9.0|
+psx|Wild Arms|1996|RPG|1|8.1|
+psx|Alundra|1997|Action RPG|1|8.4|
+psx|Crash Bandicoot|1996|Platformer|1|8.4|
+psx|Crash Bandicoot 2: Cortex Strikes Back|1997|Platformer|1|8.2|
+psx|Spyro the Dragon|1998|Platformer|1|8.2|
+psx|Tekken 3|1997|Fighting|2|9.4|2P versus
+psx|Street Fighter Alpha 3|1998|Fighting|2|9.0|
+psx|Gran Turismo|1997|Racing|2|9.0|2P via link; memory card
+psx|R4 Ridge Racer Type 4|1998|Racing|2|8.8|2P split
+psx|WipEout|1995|Racing|2|8.6|
+psx|Parasite Eve|1998|RPG|1|8.5|
+psx|Tomb Raider|1996|Action|1|8.5|
+psx|Oddworld: Abe's Oddysee|1997|Action|1|8.6|
+psx|MediEvil|1998|Action|1|8.1|
+psx|Crash Team Racing|1999|Racing|4|8.8|4P split (multitap)
+psx|Spyro 2: Ripto's Rage!|1999|Platformer|1|8.7|
+psx|Syphon Filter|1999|Action|1|8.1|
+# ------------------------------------------------------------------- PSP
+psp|Crisis Core: Final Fantasy VII|2007|RPG|1|8.5|
+psp|God of War: Chains of Olympus|2008|Action|1|8.7|
+psp|Metal Gear Solid: Peace Walker|2010|Stealth|4|8.9|4P co-op (WiFi not emulated)
+psp|Grand Theft Auto: Liberty City Stories|2005|Action|1|8.3|
+psp|WipEout Pure|2005|Racing|2|7.9|
+psp|Patapon|2007|Rhythm|1|8.5|
+psp|Lumines|2004|Puzzle|2|8.9|
+psp|Daxter|2006|Action|1|8.1|
+psp|Final Fantasy Tactics: The War of the Lions|2007|Strategy|1|8.7|
+psp|Tekken 6|2009|Fighting|2|7.9|
+psp|Jeanne d'Arc|2006|Strategy|1|8.4|
+psp|LocoRoco|2006|Platformer|1|8.0|
+# ------------------------------------------------------------------- PC Engine / TG-16
+pce|Bomberman '93|1992|Action|4|8.6|4P with Multitap
+pce|Bomberman '94|1993|Action|4|8.7|
+pce|Bonk's Adventure|1989|Platformer|1|7.9|
+pce|Ys Book I & II|1989|Action RPG|1|8.9|CD, needs System Card
+pce|Devil's Crush|1990|Pinball|2|8.4|
+pce|Military Madness (Nectaris)|1989|Strategy|2|8.7|
+pce|Neutopia|1990|Action|1|8.0|
+pce|Blazing Lazers (Gunhed)|1989|Shooter|1|8.7|
+pce|Cadash|1990|Action|2|8.0|
+pce|Image Fight|1990|Shooter|2|8.2|
+pce|Dragon's Curse (Adventure Island PC Engine)|1990|Action|1|8.1|Mouse option
+pce|Cross Arcus|1995|Action|2|7.8|Arcade Card
+pce|Snatcher|1988|Adventure|1|8.4|PCE original
+pce|Dead of the Brain|1991|Simulation|1|6.9|
+# ------------------------------------------------------------------- Arcade (MAME/FBNeo)
+arcade|Ms. Pac-Man|1981|Arcade|2|9.1|
+arcade|Galaga|1981|Arcade|2|8.9|
+arcade|Dig Dug|1982|Arcade|2|8.5|
+arcade|Rally-X|1980|Arcade|1|7.0|
+arcade|Donkey Kong|1981|Arcade|2|9.0|
+arcade|Frogger|1981|Arcade|2|7.9|
+arcade|Centipede|1981|Arcade|2|8.3|Trackball
+arcade|Asteroids|1979|Arcade|2|8.4|Vector
+arcade|Defender|1981|Arcade|2|8.7|
+arcade|Tempest|1981|Arcade|2|8.5|Vector + dial
+arcade|Missile Command|1980|Arcade|2|7.8|Trackball
+arcade|Q*bert|1982|Arcade|2|8.0|
+arcade|Joust|1982|Arcade|2|8.1|
+arcade|Pengo|1982|Arcade|2|7.6|
+arcade|BurgerTime|1982|Arcade|2|7.7|
+arcade|Yie Ar Kung-Fu|1985|Fighting|2|7.4|
+arcade|Karate Champ|1984|Fighting|2|7.3|Two joysticks
+arcade|Track & Field|1983|Sports|2|8.0|3-button sprint
+arcade|Bubble Bobble|1986|Action|2|8.7|2P co-op
+arcade|Out Run|1986|Racing|1|8.9|
+arcade|After Burner II|1987|Shooter|1|8.3|
+arcade|Double Dragon|1987|Beat 'em up|2|8.1|2P co-op
+arcade|Gauntlet II|1986|Action|4|8.0|4P
+arcade|Sunset Riders|1991|Run 'n gun|2|8.4|2P co-op
+arcade|Street Fighter II: The World Warrior|1991|Fighting|2|9.1|
+arcade|Street Fighter II' Turbo: Hyper Fighting|1992|Fighting|2|9.2|
+arcade|The King of Fighters '98: The Slugfest|1998|Fighting|2|9.2|Neo Geo
+arcade|Metal Slug 2|1998|Run 'n gun|2|8.9|Neo Geo, 2P co-op
+arcade|Metal Slug X|1999|Run 'n gun|2|9.0|
+arcade|Mega Man: The Power Battle|1995|Fighting|2|8.4|CPS1
+arcade|Vampire Savior: The Lord of Vampire|1997|Fighting|2|8.7|CPS2
+arcade|Cadillacs and Dinosaurs|1993|Beat 'em up|3|8.8|CPS1, 3P
+arcade|Warriors of Fate|1992|Beat 'em up|2|8.6|CPS1, 2P co-op
+arcade|NBA Jam Tournament Edition|1994|Sports|4|8.8|4P
+arcade|Time Crisis|1995|Shooter|1|8.2|Light gun + pedal
+arcade|Virtua Cop 2|1995|Shooter|2|8.5|2P; light guns
+arcade|Puzzle Bobble 2|1995|Puzzle|2|8.1|
+arcade|Raiden|1990|Shooter|2|8.0|
+arcade|1942|1984|Shooter|2|7.8|
+arcade|Ghosts 'n Goblins|1985|Action|2|8.2|
+arcade|Commando|1985|Run 'n gun|2|7.9|
+arcade|Teenage Mutant Ninja Turtles|1989|Beat 'em up|4|8.4|4P
+arcade|The Simpsons|1991|Beat 'em up|4|8.6|4P
+arcade|Neo Geo Cup '98: The Road to the Victory|1998|Sports|2|7.6|
+arcade|King of the Monsters|1991|Fighting|2|7.4|Neo Geo
+# ------------------------------------------------------------------- Atari
+atari2600|Combat|1977|Shooter|2|6.5|
+atari2600|Breakout|1978|Arcade|2|7.0|Paddles
+atari2600|Space Invaders|1980|Arcade|1|7.6|The one that sold the console
+atari2600|Adventure|1980|Adventure|1|8.0|First known Easter egg
+atari2600|Missile Command|1981|Arcade|2|7.2|
+atari2600|Asteroids|1981|Arcade|2|7.0|
+atari2600|Kaboom!|1981|Arcade|2|7.4|Paddles
+atari2600|Freeway|1981|Arcade|2|6.6|
+atari2600|Boxing|1980|Sports|2|6.9|
+atari2600|Pitfall!|1982|Platformer|1|8.3|Activision
+atari2600|River Raid|1984|Shooter|1|7.5|
+atari2600|Enduro|1983|Racing|1|7.7|
+atari2600|Demon Attack|1982|Shooter|1|7.1|
+atari2600|Fishing Derby|1980|Sports|2|6.4|
+atari2600|Atlantis|1982|Action|1|6.8|
+atari2600|Private Eye|1984|Puzzle|1|6.2|
+atari7800|Ballblazer|1987|Sports|2|8.0|
+atari7800|Fester's Quest|1989|Shooter|1|7.2|
+atari7800|Food Fight|1987|Arcade|2|7.3|
+atari7800|Rampage|1988|Action|2|7.4|
+atari7800|Desert Falcon|1987|Shooter|1|7.5|
+atari7800|Choplifter!|1987|Action|1|7.1|
+atari7800|Centipede|1987|Arcade|2|7.0|
+atari7800|Karateka|1987|Action|1|7.2|
+# ------------------------------------------------------------------- Neo Geo Pocket / WonderSwan
+ngp|Sonic the Hedgehog: Pocket Adventure|1999|Platformer|1|8.6|
+ngp|SNK vs. Capcom: The Match of the Millennium|1999|Fighting|2|8.9|2P versus
+ngp|The King of Fighters R-1|1998|Fighting|2|7.7|
+ngp|Big Tournament Golf|1999|Sports|2|7.9|
+ngp|Digger|2000|Puzzle|1|7.0|
+ws|Gunpey|1999|Puzzle|1|8.1|
+ws|Rockman & Forte: Mirai Kara no Chousensha|2000|Action|1|8.3|WonderSwan Color
+ws|Tobal 2 for WonderSwan|1999|Fighting|2|7.2|
+# ------------------------------------------------------------------- Computers
+c64|Impossible Mission|1983|Action|1|8.5|"Another step closer"
+c64|International Karate|1985|Fighting|2|8.6|
+c64|Bruce Lee|1983|Action|2|7.9|
+c64|Maniac Mansion|1987|Adventure|1|8.9|
+c64|Paradroid|1985|Action|1|8.7|
+c64|Boulder Dash|1984|Puzzle|2|8.8|
+c64|Uridium|1986|Shooter|1|8.4|
+c64|Rick Dangerous|1989|Action|1|8.2|
+c64|Monty on the Run|1985|Action|1|8.3|
+c64|Elite|1985|Simulation|1|8.8|
+c64|Wizball|1987|Shooter|2|8.1|
+c64|Lode Runner|1983|Action|2|8.0|
+c64|Pitstop II|1984|Racing|2|7.6|
+c64|The Last Ninja|1987|Action|1|8.9|Sid music
+c64|Bubble Bobble|1987|Action|2|8.4|
+c64|Commando|1985|Run 'n gun|2|7.8|
+dos|Prince of Persia|1989|Action|1|8.9|
+dos|Wolfenstein 3D|1992|Shooter|1|8.8|
+dos|Doom|1993|Shooter|2|9.4|2P IPX/modem (not emulated)
+dos|Doom II: Hell on Earth|1994|Shooter|2|9.0|
+dos|Quake|1996|Shooter|2|9.0|
+dos|Commander Keen in Goodbye, Galaxy!|1991|Platformer|1|8.7|
+dos|The Secret of Monkey Island|1990|Adventure|1|9.2|
+dos|Monkey Island 2: LeChuck's Revenge|1991|Adventure|1|9.0|
+dos|King's Quest V|1992|Adventure|1|8.3|
+dos|SimCity|1989|Simulation|1|8.7|
+dos|Sid Meier's Civilization|1991|Strategy|1|9.3|
+dos|Syndicate|1993|Strategy|1|8.5|
+dos|Theme Park|1994|Simulation|2|8.6|
+dos|Another World|1991|Action|1|8.9|
+dos|Flashback: The Quest for Identity|1992|Action|1|8.8|
+dos|Tyrian 2000|1999|Shooter|2|8.5|
+dos|Jazz Jackrabbit|1994|Platformer|2|8.2|
+dos|Epic Pinball|1993|Pinball|2|8.1|
+dos|Descent|1995|Shooter|2|8.7|
+dos|Heretic|1994|Shooter|2|8.4|
+dos|Duke Nukem 3D|1996|Shooter|2|9.0|
+dos|Mortal Kombat|1993|Fighting|2|8.0|
+dos|Tomb Raider|1996|Action|1|8.8|
+dos|Warcraft II: Tides of Darkness|1995|Strategy|2|9.0|LAN not emulated
+dos|Ultima VII: The Black Gate|1992|RPG|1|9.1|
+dos|System Shock|1994|Horror|1|8.7|
+# ------------------------------------------------------------------- Homebrew (freely licensed - shippable)
+homebrew|Micro Mages|2013|Action|1|8.8|Licensed NES cart by Musically incl. - buy your own copy
+homebrew|2048-GBC|2017|Puzzle|1|7.9|Public domain source; build it yourself
+homebrew|2048 NES|2017|Puzzle|1|7.6|sanitybyte - free homebrew
+homebrew|Seiver|2019|Platformer|1|7.4|SNES homebrew (Sewer56)
+homebrew|IGNOTUS|2021|Run 'n gun|1|8.0|SNES - Strictly Limited / Limited Run
+homebrew|P - Pyromaster|2014|Action|1|7.8|NES - Hyperion
+homebrew|Curtain Marsh|2022|Platformer|1|7.6|Game Boy homebrew jam entry
+homebrew|Blade Buster|2022|Action|1|7.5|Game Boy (90's kid)
+homebrew|Tiny Snowball|2023|Arcade|1|7.2|GBA homebrew compo winner
+homebrew|Kid Keyboard|2020|Puzzle|1|6.8|SMS/GG - Andrew Appoo
+homebrew|Micro Mess|2019|Puzzle|1|6.9|NES - early release
+homebrew|GD Blast|2022|Shooter|1|7.7|GBA / other targets - free
+homebrew|Doggo|2023|Adventure|1|7.3|GBA homebrew
+snes|Super Mario All-Stars: SMB2|1993|Platformer|2|8.6|Remaster bundle
+n64|Banjo-Kazooie|1998|Platformer|1|9.0|Grunty's 100 jigs
+segaMD|Sonic the Hedgehog 2|1992|Platformer|2|9.1|2P drop-in mode; Tails partner
+segaMD|Sonic Mania|2017|Platformer|2|8.8|Digital-only Genesis release
+psx|Final Fantasy VII|1997|RPG|1|9.5|Needs BIOS + memory card
+psx|PaRappa the Rapper|1996|Rhythm|2|8.2|2P versus battles; needs the disc
+arcade|Darius II|1989|Shooter|2|8.2|Taito; 2P co-op
+arcade|Pac-Man|1980|Maze|2|9.4|Score chase, not a fight - 2P alternate turns
