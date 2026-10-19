@@ -61,6 +61,18 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: boot the app in chromium
         run: node tools/browser-check.mjs
+      # A Contents-only token cannot read a job log, but it can read check-run
+      # annotations - so the failure path prints what it needs to be diagnosable
+      # from the API alone. browser-check.mjs emits ::error:: for every assertion
+      # it fails, and this adds the runner's own facts around it.
+      - name: what the runner had
+        if: failure()
+        run: |
+          echo "::error::node $(node --version) / npm $(npm --version)"
+          npx playwright --version 2>&1 | tail -1 | sed 's/^/::error::/'
+          ls ~/.cache/ms-playwright 2>/dev/null | tr '\n' ' ' | sed 's/^/::error::browsers: /'
+          free -m 2>/dev/null | tail -1 | sed 's/^/::error::mem: /'
+          df -h /dev/shm 2>/dev/null | tail -1 | sed 's/^/::error::shm: /'
       - uses: actions/upload-artifact@v4
         if: always()
         with:

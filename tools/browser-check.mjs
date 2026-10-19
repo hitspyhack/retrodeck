@@ -42,10 +42,26 @@ try {
 mkdirSync(OUT, { recursive: true });
 const PORT = 4319 + (process.pid % 60);
 const ORIGIN = `http://127.0.0.1:${PORT}`;
-const server = spawn(process.execPath, [join(ROOT, "server.mjs"), "--port", String(PORT), "--threads"], { cwd: ROOT, stdio: "ignore" });
+// The server's own output is kept, not discarded: if it dies on the way up, the
+// one useful sentence in the whole run is the one it prints, and a bare
+// "server.mjs never answered" tells nobody anything.
+let serverLog = "";
+const server = spawn(process.execPath, [join(ROOT, "server.mjs"), "--port", String(PORT), "--threads"], {
+  cwd: ROOT,
+  stdio: ["ignore", "pipe", "pipe"],
+});
+for (const stream of [server.stdout, server.stderr]) {
+  stream?.setEncoding?.("utf8");
+  stream?.on?.("data", (chunk) => {
+    serverLog = (serverLog + chunk).slice(-3000);
+  });
+}
+server.on("exit", (code, signal) => {
+  serverLog += `\n[server exited code=${code} signal=${signal}]\n`;
+});
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function waitForServer(deadline = 15000) {
+async function waitForServer(deadline = 60000) {
   const t0 = Date.now();
   while (Date.now() - t0 < deadline) {
     try {
@@ -57,13 +73,24 @@ async function waitForServer(deadline = 15000) {
 }
 
 let failures = 0;
+// GitHub turns `::error::` lines in a step's stdout into check-run annotations,
+// and those are readable through the API by a token that cannot read the job log.
+// Without this the browser job can only ever say "exit code 1", which is how this
+// file spent two runs red with nobody able to tell why. `%` is Actions' escape
+// character and a newline would break the command, so both go.
+const ann = (text) => `::error::${String(text).replace(/%/g, "%25").replace(/\s+/g, " ").slice(0, 500)}`;
 const say = (ok, msg, detail = "") => {
-  if (!ok) failures++;
+  if (!ok) {
+    failures++;
+    console.log(ann(`browser check: ${msg}${detail ? ` - ${detail}` : ""}`));
+  }
   console.log(`${ok ? "ok  " : "FAIL"} ${msg}${detail ? `  ${detail}` : ""}`);
 };
 
 async function main() {
-  if (!(await waitForServer())) throw new Error(`server.mjs never answered on ${ORIGIN}`);
+  if (!(await waitForServer())) {
+    throw new Error(`server.mjs never answered on ${ORIGIN} - it said:\n${serverLog.trim() || "(nothing at all on stdout or stderr)"}`);
+  }
     // --disable-dev-shm-usage is not cosmetic: in a container with a small /dev/shm a
   // wasm core takes the renderer down ("Page crashed") and the run reports failures
   // that belong to the sandbox, not to the app.
@@ -309,6 +336,9 @@ try {
   await Promise.race([main(), sleep(BUDGET * 3).then(() => { throw new Error("browser check exceeded its overall budget"); })]);
 } catch (err) {
   console.error(`\nbrowser check failed: ${err && err.message ? err.message : err}`);
+  // a throw says more in its stack than its message, and the stack is what the
+  // annotation needs - this is the difference between "exit code 1" and a fact
+  console.log(ann(`browser check threw: ${(err && (err.stack || err.message)) || err}`));
   failures++;
   try { await chromium?.launch ? null : null; } catch {}
 } finally {
