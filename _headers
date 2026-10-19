@@ -1,0 +1,40 @@
+# Cloudflare Pages (_headers) - the same two headers server.mjs --threads sets.
+#
+# SharedArrayBuffer only exists in a cross-origin-isolated context, and threaded
+# cores (parallel_n64, the *-thread-wasm.data builds, dosbox_pure) need it: without
+# COOP+COEP the runtime warns "This core requires threads, but EJS_threads is not
+# set" and falls back to the single-threaded blob. COEP: require-corp is safe
+# against the CDN because cdn.emulatorjs.org answers with
+# `cross-origin-resource-policy: cross-origin` and `access-control-allow-origin: *`
+# on both loader.js and cores/*-wasm.data - worth re-checking if you point
+# emulator.cdnBase at a mirror that does not send them.
+
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Referrer-Policy: same-origin
+  X-Content-Type-Options: nosniff
+
+/index.html
+  Cache-Control: no-cache
+
+/sw.js
+  Cache-Control: no-cache
+
+/manifest.webmanifest
+  Cache-Control: no-cache
+
+/data/*
+  Cache-Control: no-cache
+
+/css/*
+  Cache-Control: public, max-age=3600
+
+/js/*
+  Cache-Control: public, max-age=3600
+
+/icons/*
+  Cache-Control: public, max-age=604800
+
+/vendor/*
+  Cache-Control: public, max-age=31536000, immutable

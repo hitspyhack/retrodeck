@@ -169,7 +169,14 @@ const server = createServer(async (req, res) => {
     if (THREADS) {
       headers["cross-origin-opener-policy"] = "same-origin";
       headers["cross-origin-embedder-policy"] = "require-corp";
-      headers["permissions-policy"] = "ch-ua-full-version-list=(), cross-origin-isolated=1";
+      // That pair is the whole requirement: `crossOriginIsolated` is true only when
+      // both are present (and the context is trustworthy). Do NOT add
+      // `Permissions-Policy: cross-origin-isolated=...` to "help" - the feature is
+      // derived from the two headers above, and a permissions-policy entry for it
+      // with a value the parser rejects (which is what an earlier version of this
+      // line did) *denies* it: chromium then reports crossOriginIsolated=false and
+      // SharedArrayBuffer is gone, so every threaded core silently falls back.
+      // tools/browser-check.mjs asserts isolation, which is how that was found.
     }
 
     // Range support: EmulatorJS issues ranged reads for large cores/disc images

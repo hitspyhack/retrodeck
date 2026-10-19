@@ -11,10 +11,16 @@
  *   EJS_player, EJS_core, EJS_gameUrl, EJS_biosUrl, EJS_gameName, EJS_gameID,
  *   EJS_pathtodata, EJS_startOnLoaded, EJS_threads, EJS_color,
  *   EJS_backgroundColor, EJS_defaultControls, EJS_controlScheme,
- *   EJS_defaultOptions, EJS_volume, EJS_cacheConfig, EJS_videoRotation,
- *   EJS_fullscreenOnLoaded, EJS_askBeforeExit, EJS_onGameStart, EJS_ready,
- *   EJS_onSaveState, EJS_onLoadState, EJS_onSaveUpdate, EJS_onSaveSave,
- *   EJS_onLoadSave, EJS_onExit.
+ *   EJS_defaultOptions, EJS_volume, EJS_CacheLimit, EJS_videoRotation,
+ *   EJS_fullscreenOnLoaded, EJS_threads, EJS_cheats, EJS_onGameStart, EJS_ready,
+ *   EJS_onSaveState, EJS_onLoadState, EJS_onSaveSave, EJS_onLoadSave.
+ *
+ * That list is not from the documentation page - it is every `EJS_*` key that
+ * `data/loader.js` of the pinned runtime actually forwards, and tools/test.mjs
+ * fails if this file sets a key that loader ignores. (Five keys used to live here
+ * that nothing read: EJS_cacheConfig, EJS_askBeforeExit, EJS_disableAutoUnload,
+ * EJS_onSaveUpdate, EJS_onExit. The last two meant the "save written" toast and
+ * the exit event were wired to callbacks EmulatorJS never calls.)
  * Saves and states are mirrored back into IndexedDB (js/core/idb.js) so a
  * browser refresh does not cost you a 20-hour RPG.
  */
@@ -23,6 +29,7 @@ import { store } from "./store.js";
 import { vault } from "./idb.js";
 import { ejsControls } from "./pad.js";
 import { SYSTEMS, SYSTEM_BY_ID } from "../data/systems.js";
+import { cheatsFor, ejsCheats } from "./cheats.js";
 import { MODEL_BY_ID } from "../data/models.js";
 
 /**
@@ -144,20 +151,25 @@ export class EmuPlayer {
   }
 
   /** Build the frame's document. Everything is inline: no fetch, no CSP surprises. */
-  #doc({ gameUrl, biosUrl, controls, opts }) {
+  async #doc({ gameUrl, biosUrl, controls, opts }) {
     const base = dataBase();
     const color = this.model?.skinAccent || this.system?.color || "#1AAFFF";
     // EmulatorJS only understands a handful of named schemes; anything else is
     // left unset so the core keeps its own defaults instead of a wrong layout.
     const scheme = EJS_SCHEMES.has(this.system?.controlScheme) ? this.system.controlScheme : "";
     const vol = Number(store.get("emulator.volume", 0.7));
-    const cacheCfg = {
-      enabled: !!store.get("emulator.cache", true),
-      cacheMaxSizeMB: store.get("emulator.cacheMaxSizeMB", 2048),
-      cacheMaxAgeMins: 7200,
-    };
+    // EJS_CacheLimit is compared against a content-length in BYTES (the runtime's
+    // own default is 1073741824), so the MB slider converts here; 0 disables the
+    // runtime's IndexedDB store, which is what "keep cores in browser storage" off
+    // is supposed to mean.
+    const cacheLimit = store.get("emulator.cache", true)
+      ? Math.max(0, Number(store.get("emulator.cacheMaxSizeMB", 2048)) || 0) * 1048576
+      : 0;
     const rot = Number(this.cfg.rotate ?? 0);
     const gameId = Number(this.o.game?.db || this.o.game?.gameId || 1) || 1;
+    // Read at boot, not at edit time: your list is in the vault, so the core always
+    // starts with the current one and no restart dance is needed after typing.
+    const cheats = this.system?.features?.cheats === false ? [] : ejsCheats(await cheatsFor(this.gameKey));
     const patchUrl = (p) => JSON.stringify(p);
 
     return `<!doctype html>
@@ -195,9 +207,8 @@ export class EmuPlayer {
     window.EJS_startOnLoaded = ${!!opts.autoStart};
     window.EJS_threads = ${!!store.get("emulator.threads", false)};
     window.EJS_volume = ${vol};
-    window.EJS_askBeforeExit = ${!!store.get("emulator.exitConfirm", false)};
-    window.EJS_disableAutoUnload = ${!!store.get("emulator.disableAutoUnload", false)};
-    window.EJS_cacheConfig = ${JSON.stringify(cacheCfg)};
+    window.EJS_CacheLimit = ${cacheLimit};
+    ${cheats.length ? `window.EJS_cheats = ${JSON.stringify(cheats)};` : "/* no cheats for this game: EJS_cheats stays unset */"}
     window.EJS_controlScheme = ${patchUrl(scheme)};
     window.EJS_defaultControls = ${JSON.stringify(controls)};
     window.EJS_defaultOptions = ${JSON.stringify(opts.options)};
@@ -210,13 +221,24 @@ export class EmuPlayer {
       catch(err){ send('error', { msg: 'state export failed: ' + err.message }); }
     };
     window.EJS_onLoadState = function(e){ send('state-loaded', { slot: window.__slot || 0 }); };
-    window.EJS_onSaveUpdate = function(e){
-      try { send('sram', { hash: e && e.hash, shot: e && e.screenshot, bytes: e && e.save }); } catch(err){}
-    };
     window.EJS_onSaveSave = function(e){
       try { send('sram', { shot: e && e.screenshot, bytes: e && e.save }); } catch(err){}
     };
-    window.EJS_onExit = function(){ send('exit'); };
+    window.EJS_onLoadSave = function(e){
+      try { send('sram-loaded', { bytes: e && e.save }); } catch(err){}
+    };
+    // There is no exit callback in this runtime. Page hide is the closest real
+    // signal, and the runtime does expose a flush, so ask it to write the battery
+    // save and then tell the parent - "closed the tab mid-dungeon" should not cost
+    // the last few minutes.
+    window.__flush = function(){
+      try {
+        var g = window.EJS_emulator && window.EJS_emulator.gameManager;
+        if (g && g.saveSaveFiles) g.saveSaveFiles();
+      } catch(err){}
+    };
+    window.addEventListener('pagehide', function(){ window.__flush(); send('exit'); });
+    document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') window.__flush(); });
     window.addEventListener('error', function(ev){ send('error', { msg: (ev && ev.message) || 'core error' }); });
     window.addEventListener('message', function(ev){
       var d = ev.data || {};
@@ -267,7 +289,7 @@ export class EmuPlayer {
       ...(this.cfg.palette ? { gbs_palette: this.cfg.palette } : {}),
     };
     const controls = ejsControls(this.system, this.cfg.controls);
-    const doc = this.#doc({
+    const doc = await this.#doc({
       gameUrl,
       biosUrl,
       controls,
@@ -348,6 +370,18 @@ export class EmuPlayer {
         const bytes = d.bytes instanceof Blob ? new Uint8Array(await d.bytes.arrayBuffer()) : d.bytes;
         await vault.saveSram(this.gameKey, bytes, this.o.game?.title || this.o.game?.name, d.shot);
         this.#emit("sram", { size: bytes.length });
+        break;
+      }
+      case "sram-loaded": {
+        // The runtime restored a battery save at boot; if the vault has nothing for
+        // this game yet, keep the copy so it survives a reload of the page.
+        if (d.bytes) {
+          const bytes = d.bytes instanceof Blob ? new Uint8Array(await d.bytes.arrayBuffer()) : d.bytes;
+          if (bytes && bytes.length && !(await vault.sramFor(this.gameKey))) {
+            await vault.saveSram(this.gameKey, bytes, this.o.game?.title || this.o.game?.name, null);
+          }
+        }
+        this.#emit("sram-loaded", { size: d.bytes ? d.bytes.size || d.bytes.length : 0 });
         break;
       }
       case "exit":

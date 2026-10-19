@@ -17,7 +17,11 @@
     "test:fast": "node tools/test.mjs --fast",
     "serve:check": "node tools/serve-check.mjs",
     "imports": "node tools/check-imports.mjs",
-    "test:sw": "node tools/test-sw.mjs"
+    "test:sw": "node tools/test-sw.mjs",
+    "deploy:prepare": "node tools/make-dist.mjs",
+    "deploy:check": "node tools/make-dist.mjs --check",
+    "test:browser": "node tools/browser-check.mjs",
+    "deploy:check:full": "node tools/make-dist.mjs && node tools/browser-check.mjs"
   },
   "engines": {
     "node": ">=18"

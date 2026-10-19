@@ -1,0 +1,98 @@
+name: ci
+
+# Every check in this file is the repo's own tooling: `npm test` needs no install
+# at all (no dependencies), so a broken main is caught in ~20 seconds rather than
+# by someone noticing the site does not boot.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: checks (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20", "22"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: versions
+        run: node --version && npm --version && echo "::notice::no npm ci needed - the app and its tests have zero dependencies"
+      - name: npm test
+        run: npm test
+      - name: deploy folder is complete
+        run: npm run deploy:prepare && npm run deploy:check
+      - name: generated catalogue matches data/source
+        run: |
+          npm run build
+          if ! git diff --exit-code --quiet data/games.json js/data/games.generated.js; then
+            echo "::error::data/games.json and js/data/games.generated.js are committed generated files that do not match data/source/games.tsv - run 'npm run build' and commit the result"
+            git --no-pager diff --stat -- data/games.json js/data/games.generated.js
+            exit 1
+          fi
+
+  browser:
+    name: real browser
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # Playwright is installed here and nowhere else: it stays out of package.json
+      # so `npm test` remains runnable with no network and no install.
+      - run: npm i --no-save --no-audit --no-fund playwright@1.49.1
+      - run: npx playwright install --with-deps chromium
+      - name: boot the app in chromium
+        run: node tools/browser-check.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-check
+          path: |
+            .browser-check/
+          if-no-files-found: warn
+          retention-days: 14
+
+  pages:
+    name: deploy to GitHub Pages
+    needs: [test, browser]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: build the deploy folder
+        run: npm run deploy:prepare
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

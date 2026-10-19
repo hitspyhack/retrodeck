@@ -13,13 +13,43 @@ import { SKINS, skinVars } from "../data/skins.js";
 import { PADS, padsFor, padButtonIds } from "../data/layouts.js";
 import { defaultMapping } from "../core/pad.js";
 import { store } from "../core/store.js";
-import { h, mount, toggle, range, select, sectionTitle, toast } from "../ui.js";
+import { h, mount, toggle, range, select, sectionTitle, toast, textRow } from "../ui.js";
+import { cheatsFor, formatCheats, parseCheats, setCheats } from "../core/cheats.js";
 
 const SAVE_LOC = [
   ["browser", "Browser (keeps states in RetroDeck)"],
   ["download", "Download to my files"],
   ["both", "Both"],
 ];
+
+/**
+ * Cheat codes for the game being configured (or for the whole deck, at the system
+ * layer, which is where a "every game on this console" list would live). The
+ * runtime shows these in its own menu with a checkbox each, so this editor only
+ * has to hold text: `Infinite lives | 0100FF00` per line.
+ */
+function cheatRow(sysId, scope) {
+  const key = scope === "game" ? `game:${sysId}` : `sys:${sysId}`;
+  let editing = false;
+  const row = textRow("Cheat codes", "", async (v) => {
+    if (editing) return;
+    const saved = await setCheats(key, parseCheats(v));
+    toast(saved.length ? `${saved.length} cheat(s) saved - they appear in the core's own menu` : "cheats cleared", "good", 3200);
+  }, {
+    hint: "one per line: name | code (Game Genie, PAR - the core decides)",
+  });
+  // Filled in once the vault answers, because a form that pretends a game has no
+  // cheats until the read finishes is how you overwrite a real list with nothing.
+  cheatsFor(key).then((rows) => {
+    if (!rows.length) return;
+    const input = row.querySelector("input");
+    if (!input) return;
+    editing = true;
+    input.value = formatCheats(rows);
+    editing = false;
+  });
+  return row;
+}
 
 export function configForm({ sysId, modelId, cfg = {}, set, scope = "system" }) {
   const sys = SYSTEM_BY_ID[sysId];
@@ -33,6 +63,7 @@ export function configForm({ sysId, modelId, cfg = {}, set, scope = "system" }) 
         ["", `Let RetroDeck choose (${defaultModelLabel(sysId)})`],
         ...modelsFor(sysId).map((m) => [m.id, `${m.name} · ${m.year || ""}`]),
       ], (v) => set({ model: v || null }), "drives shell art, screen box, pad and skin"),
+      sys?.features?.cheats === false ? null : cheatRow(sysId, scope),
       // A deck with no core upstream shows the reason rather than an empty
       // dropdown: picking from nothing is what a form should never do.
       (sys?.cores || []).length

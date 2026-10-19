@@ -220,6 +220,49 @@ check("systems: pads, buttons, cores and extensions line up", () => {
   return `${SYSTEMS.length} systems, ${PUBLISHED.size} published cores, ${runtime.cores.reduce((a, c) => a + (c.name && SYSTEMS.some((s) => s.ejsCore === c.name) ? 1 : 0), 0)} of them a deck's default`;
 });
 
+check("every EJS_* option the app sets is one the runtime forwards", () => {
+  const snap = JSON.parse(read(join("data", "source", "emulatorjs.json")));
+  if (!Array.isArray(snap.loaderKeys) || snap.loaderKeys.length < 20) throw new Error("data/source/emulatorjs.json has no loaderKeys - run node tools/refresh-runtime.mjs");
+  const forwarded = new Set(snap.loaderKeys);
+  // set by the runtime itself, read by the frame bridge - not a config option
+  const runtimeOwn = new Set(["EJS_emulator", "EJS_STORAGE", "EJS_DUMMYSTORAGE", "EJS_COMPRESSION", "EJS_GameManager", "EJS_Runtime"]);
+  const offenders = [];
+  let assignments = 0;
+  for (const rel of jsFiles()) {
+    const src = read(rel);
+    for (const m of src.matchAll(/window\.(EJS_[A-Za-z0-9_]+)/g)) {
+      assignments++;
+      if (!forwarded.has(m[1]) && !runtimeOwn.has(m[1])) offenders.push(`${rel}: ${m[1]} - ${snap.stableVersion}'s loader never reads it`);
+    }
+  }
+  if (offenders.length) throw new Error(offenders.slice(0, 8).join("\n"));
+  return `${assignments} assignments, all in the ${forwarded.size} keys loader.js forwards`;
+});
+
+check("a deploy folder can be built and contains what the app requests", () => {
+  const out = spawn("tools/make-dist.mjs");
+  const check2 = spawn("tools/make-dist.mjs", ["--check"]);
+  const files = Number((out.match(/files\s+(\d+)/) || [])[1] || 0);
+  const mods = Number((out.match(/modules\s+(\d+)/) || [])[1] || 0);
+  if (!/ok\s+every file the deployed app asks for is in dist\//.test(check2)) throw new Error("make-dist --check did not confirm completeness:\n" + check2);
+  if (files < 60 || mods < 20) throw new Error(`dist looks thin: ${files} files, ${mods} modules`);
+  return `dist/ ${files} files, ${mods} modules reachable from index.html`;
+});
+
+check("every host config sends the headers threaded cores need", () => {
+  const need = ["Cross-Origin-Opener-Policy", "Cross-Origin-Embedder-Policy"];
+  const bad = [];
+  for (const f of ["_headers", "netlify.toml", "vercel.json"]) {
+    let body = "";
+    try { body = read(f); } catch { bad.push(`${f} is missing`); continue; }
+    for (const h of need) if (!new RegExp(h.replace(/-/g, "-"), "i").test(body)) bad.push(`${f} does not set ${h}`);
+    if (!/require-corp/i.test(body)) bad.push(`${f} sets COEP to something other than require-corp`);
+    if (!/vendor/i.test(body)) bad.push(`${f} says nothing about /vendor/ caching`);
+  }
+  if (bad.length) throw new Error(bad.join("\n"));
+  return "3 hosts configured, same pair server.mjs --threads sends";
+});
+
 check("every pad id a system advertises exists in layouts.js, and vice versa", () => {
   const bad = [];
   const spilled = [];

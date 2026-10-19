@@ -66,8 +66,8 @@ export async function renderSettings(root, ctx) {
         ["download", "Download to my files"],
         ["both", "Both"],
       ]),
-      tgl("emulator.exitConfirm", "Ask before leaving a running game"),
-      tgl("emulator.disableAutoUnload", "Do not unload the core when the tab hides"),
+      tgl("emulator.exitConfirm", "Ask before leaving a running game", "the page warns you, the core has no prompt of its own"),
+
       rng("emulator.volume", "Volume", 0, 100, 1, 100, (v) => `${v}%`),
       sel("emulator.shaders", "Default shader", [["none", "None"], ["crt", "CRT"], ["scanlines", "Scanlines"], ["grille", "Grille"]]),
       tgl("emulator.rewind", "Rewind by default"),

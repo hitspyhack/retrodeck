@@ -58,7 +58,6 @@ export const DEFAULTS = {
     volume: 0.7,
     inputBridge: "keyboard", // keyboard | direct | both
     exitConfirm: false,
-    disableAutoUnload: false,
   },
   /* per-system overrides */
   system: {},

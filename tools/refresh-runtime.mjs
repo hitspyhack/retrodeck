@@ -44,12 +44,21 @@ const versions = [...new Set(index.split('"').map((v) => (v.match(/^\.?\/?(\d+\.
     return A[0] - B[0] || A[1] - B[1] || A[2] - B[2];
   });
 
+// What the runtime actually accepts: `data/loader.js` is a small file that copies a
+// fixed list of window.EJS_* globals into its config. Anything this app sets that is
+// not in that list is a setting that silently goes nowhere (five of them did), so the
+// list is snapshotted next to the core names and tools/test.mjs enforces it.
+const loader = await (await get("/stable/data/loader.js")).text();
+const loaderKeys = [...new Set(loader.match(/EJS_[A-Za-z0-9_]+/g) || [])].sort();
+if (loaderKeys.length < 20) throw new Error(`only ${loaderKeys.length} EJS_ keys in loader.js - upstream changed it; refusing to write a snapshot that would clear the check`);
+
 const payload = {
   source: BASE,
   retrieved: new Date().toISOString().slice(0, 10),
   stableVersion: version?.version || null,
   channels: ["stable", ...versions.slice(-6).reverse()],
   cores: (cores || []).map((c) => ({ name: c.name, extensions: c.extensions || [] })),
+  loaderKeys,
 };
 if (!payload.cores.length) throw new Error("empty core list - upstream changed data/cores/cores.json, refusing to write a snapshot that would clear the checks");
 
@@ -60,6 +69,7 @@ const gone = (prev?.cores || []).map((c) => c.name).filter((n) => !payload.cores
 console.log(`data/source/emulatorjs.json`);
 console.log(`  stable    ${payload.stableVersion}`);
 console.log(`  channels  ${payload.channels.join(", ")}`);
+console.log(`  keys      ${payload.loaderKeys.length} EJS_* the loader forwards`);
 console.log(`  cores     ${payload.cores.length}${prev ? ` (${payload.cores.length - prev.cores.length >= 0 ? "+" : ""}${payload.cores.length - prev.cores.length} vs the snapshot on disk)` : ""}`);
 if (added.length) console.log(`  new       ${added.join(", ")}`);
 if (gone.length) console.log(`  gone      ${gone.join(", ")}  <- decks pointing at these must be retargeted`);

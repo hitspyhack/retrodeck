@@ -105,3 +105,6 @@ Thumbs.db
 .env
 .idea/
 .vscode/
+
+# browser-check output: screenshots and the throwaway probe ROM
+.browser-check/

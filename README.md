@@ -1,5 +1,8 @@
 # RetroDeck
 
+![checks](https://github.com/hitspyhack/retrodeck/workflows/ci/badge.svg)
+
+
 A pocket full of consoles, in a web page. 26 systems, 61 hardware models, 78
 controller layouts, 50 skins, 488 classic titles indexed — and six original
 games that are playable the moment you open the page, because they were written
@@ -165,7 +168,7 @@ museum kiosk or a plane.
 ## Tests
 
 ```sh
-npm test            # 19 checks, ~7 s, no dependencies
+npm test            # 22 checks, ~7 s, no dependencies
 npm run test:fast   # the static ones only
 npm run test:sw     # sw.js against stubs, nothing else can reach it
 npm run imports     # every module in js/, imported under the DOM shim
@@ -177,7 +180,17 @@ npm run audit       # classes and CSS variables the JS renders vs what css/ defi
 Nineteen checks, because a project with no build step has no compiler to catch
 drift - and no browser in this sandbox either, so every one of them runs in node:
 
-**The data.** `node --check` on all 43 modules (app, tools, server). Every model's `tpl`, `pad` and
+![the library on a phone](docs/img/library.png)
+
+**The browser.** `npm run test:browser` boots the real app in headless chromium and
+asserts what no node test can: that the isolation headers make `SharedArrayBuffer`
+exist, that a built-in game paints (the canvas is sampled, twice), that offline
+serves the shell from the service-worker cache, that importing a file detects its
+console and mounts a core, and that every deck's core name is one the runtime
+actually publishes. It is opt-in because it needs a browser binary - `npm test`
+stays installable with no network. CI runs it as its own job.
+
+**The data.** `node --check` on all 46 modules (app, tools, server). Every model's `tpl`, `pad` and
 `skins` reference resolves, and `buildShell` renders all 61 shells with a sane
 screen box. Every pad id a system advertises exists in `layouts.js` (and 77 of
 the 78 layouts are used), no widget escapes its field, button `ejs` indexes are
@@ -240,6 +253,7 @@ js/ui.js              100-line element builder, sheets, toasts, file pickers
 server.mjs            static server: wasm/mjs types, ETag, ranges, COOP/COEP
 tools/                build, test, sim, css audit, icons, vendor mirror, runtime
                       snapshot refresh, import check, service-worker/server checks
+docs/DEPLOYING.md     dist/, four hosts, the two headers that matter, offline mirror
 covers/<system>/      drop box art here (or per game from the app) - see covers/README.md
 homebrew/<system>/    drop freely-licensed files here, then npm run build
 docs/                 PLAYING.md, ADDING-GAMES.md
