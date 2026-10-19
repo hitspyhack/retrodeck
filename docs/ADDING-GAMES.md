@@ -100,8 +100,9 @@ nes|Super Mario Bros.|1985|Platformer|2|9.0|2P alternating; warp zones
   without a second list to maintain.
 
 **Never** put a URL to a game file in any column. The build does not check that
-you obeyed, `npm test` does (check 8: no document in the repo may link to a
-file this project does not have).
+you obeyed; `npm test` does - one of its checks scans every JS, HTML and
+Markdown file in the repo and fails on a link to a game image this project does
+not have.
 
 ## 3. Hardware: a system, a model, a pad or a skin
 
