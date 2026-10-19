@@ -148,7 +148,7 @@ npm run audit       # classes and CSS variables the JS renders vs what css/ defi
 Nineteen checks, because a project with no build step has no compiler to catch
 drift - and no browser in this sandbox either, so every one of them runs in node:
 
-**The data.** `node --check` on all 39 modules. Every model's `tpl`, `pad` and
+**The data.** `node --check` on all 41 modules (app, tools, server). Every model's `tpl`, `pad` and
 `skins` reference resolves, and `buildShell` renders all 61 shells with a sane
 screen box. Every pad id a system advertises exists in `layouts.js` (and 77 of
 the 78 layouts are used), no widget escapes its field, button `ejs` indexes are
@@ -205,7 +205,8 @@ js/games/             the built-in engine + six original titles
 js/views/             home, library, decks, deck, vault, settings, player
 js/ui.js              100-line element builder, sheets, toasts, file pickers
 server.mjs            static server: wasm/mjs types, ETag, ranges, COOP/COEP
-tools/                build, test, sim, css audit, icons, vendor mirror
+tools/                build, test, sim, css audit, icons, vendor mirror,
+                      import check, service-worker and server checks
 homebrew/<system>/    drop freely-licensed files here, then npm run build
 docs/                 PLAYING.md, ADDING-GAMES.md
 ```
