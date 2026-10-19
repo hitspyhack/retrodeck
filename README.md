@@ -92,9 +92,28 @@ js/data/layouts.js   78 controller layouts in one 100×46 unit field, each with
                      rows, trackballs, light guns, keybeds, VMU screens)
 js/data/skins.js     50 skins (22 CSS variables each) + 10 aftermarket ones,
                      plus the accent a model wants
+data/source/         the inputs: games.tsv (488 rows) and emulatorjs.json, a
+                     snapshot of what the runtime publishes today
 js/core/shell.js     17 SVG shell templates; every model draws its own hardware
                      and the screen box that the game is placed inside
 ```
+
+`systems.js` also names the emulator core each deck boots, and those are the
+runtime's names, not the console's: the NES deck boots `fceumm`, Game Boy boots
+`gambatte`, Mega Drive boots `genesis_plus_gx`. Getting that wrong is invisible
+until the first game - `cores/nes-wasm.data` is a 404 - so it is not left to
+anyone's memory. `data/source/emulatorjs.json` records what the CDN publishes
+today (48 cores, with the extensions each one reads, plus the version
+directories that exist), and `npm test` fails if a deck's `ejsCore` or any core it
+offers is not in that list, if a deck claims a format none of its cores can read,
+or if the channel dropdown offers a version that is not a real directory.
+`node tools/refresh-runtime.mjs` refreshes the snapshot when upstream renames
+something; the fix then belongs in the deck, in the same commit.
+
+Two things you can see in the app because of it: the Dreamcast deck will not boot a
+disc, because this runtime publishes no flycast core - it says so, in a sentence,
+and offers Saturn instead - and the SNES deck offers one core, because that is all
+there is.
 
 A model is not a picture: `buildShell(model)` returns the geometry that decides
 where the canvas goes, which pad is offered, which skin is default, and what
@@ -127,14 +146,18 @@ in **Cartridges ▸ Save states** where you can delete or export one.
 ## Going fully offline
 
 ```sh
-npm run vendor                 # the 21 cores the app offers
-npm run vendor -- --all        # everything the runtime publishes
-npm run vendor -- --cores nes,gambatte,genesis_plus_gx
+npm run vendor                      # one blob per core: each deck's default (20)
+npm run vendor -- --list            # what that means, before downloading it
+npm run vendor -- --all             # all 48 cores this runtime publishes
+npm run vendor -- --cores gambatte,mgba,snes9x
+npm run vendor -- --full --threads  # every core any deck can be set to, + threaded builds
 ```
 
-That mirrors the runtime payload into `vendor/data/` - tens to a couple of
-hundred MB, depending on which cores you ask for - git-ignored, resumable,
-idempotent, and verified against a local mirror by `npm test`. Then
+That mirrors the payload into `vendor/data/` with the layout the CDN uses -
+`loader.js`, `emulator.min.js`, `emulator.min.css`, `cores/cores.json`, and one
+`cores/<name>-wasm.data` per core - tens to a couple of hundred MB depending on
+which cores you ask for; git-ignored, resumable, idempotent, and verified
+against a local mirror by `npm test`. Then
 choose *./vendor (self-hosted)* under **Settings ▸ Emulator ▸ Payload source** and the app needs
 nothing but its own origin — the right setting for a phone, a classroom, a
 museum kiosk or a plane.
@@ -154,7 +177,7 @@ npm run audit       # classes and CSS variables the JS renders vs what css/ defi
 Nineteen checks, because a project with no build step has no compiler to catch
 drift - and no browser in this sandbox either, so every one of them runs in node:
 
-**The data.** `node --check` on all 42 modules (app, tools, server). Every model's `tpl`, `pad` and
+**The data.** `node --check` on all 43 modules (app, tools, server). Every model's `tpl`, `pad` and
 `skins` reference resolves, and `buildShell` renders all 61 shells with a sane
 screen box. Every pad id a system advertises exists in `layouts.js` (and 77 of
 the 78 layouts are used), no widget escapes its field, button `ejs` indexes are
@@ -184,8 +207,9 @@ fake CDN on a loopback port and requires byte-identical files, a sane manifest,
 tolerated optional 404s, an idempotent re-run and a hard failure for a dead
 mirror. `tools/test-sw.mjs` executes `sw.js` against stubs and checks what it
 intercepts: the game index and the app's modules get cached, a `blob:` ROM url
-and any `Range` request are left alone, `.wasm` payloads stay in the core's own
-IndexedDB, and a cold offline navigation still opens the app.
+and any `Range` request are left alone, the tens-of-megabytes `cores/*-wasm.data`
+blobs stay in the runtime's own IndexedDB, and a cold offline navigation still
+opens the app.
 `tools/serve-check.mjs` speaks real HTTP to a real server - every `src`/`href`
 in `index.html`, all 28 modules reachable from `js/app.js`, COOP/COEP, ETag
 revalidation, `HEAD`, byte ranges, module and WASM content types - and writes a
@@ -214,8 +238,8 @@ js/games/             the built-in engine + six original titles
 js/views/             home, library, decks, deck, vault, settings, player
 js/ui.js              100-line element builder, sheets, toasts, file pickers
 server.mjs            static server: wasm/mjs types, ETag, ranges, COOP/COEP
-tools/                build, test, sim, css audit, icons, vendor mirror,
-                      import check, service-worker and server checks
+tools/                build, test, sim, css audit, icons, vendor mirror, runtime
+                      snapshot refresh, import check, service-worker/server checks
 covers/<system>/      drop box art here (or per game from the app) - see covers/README.md
 homebrew/<system>/    drop freely-licensed files here, then npm run build
 docs/                 PLAYING.md, ADDING-GAMES.md

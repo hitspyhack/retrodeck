@@ -336,18 +336,28 @@ async function deepPass() {
 
   // 5c. the "Homebrew & Public Domain" shelf holds files from many consoles, so
   // its core is resolved from the file. It must never hand the loader a core
-  // named "auto" (that is a 404 for cores/auto.js) and never guess for a .zip.
+  // named "auto" (that is a 404 for cores/auto-wasm.data) and never guess for a .zip.
   {
     const { pickCore, coreForExt } = await import("../js/core/emulator.js");
     const got = {
       nesFile: pickCore("homebrew", { ext: "nes" }),
       snesName: pickCore("homebrew", { fileName: "Demo Game (World).sfc" }),
       zipFile: pickCore("homebrew", { ext: "zip" }),
-      forced: pickCore("homebrew", { core: "gbc", ext: "nes" }),
+      forced: pickCore("homebrew", { core: "gambatte", ext: "nes" }),
       normalShelf: pickCore("gb", {}),
+      corelessDeck: pickCore("dreamcast", {}),
     };
-    const okCore = got.nesFile === "nes" && got.snesName === "snes" && got.zipFile === null && got.forced === "gbc" && got.normalShelf === "gb";
-    console.log(`${okCore ? "ok  " : "FAIL"}  homebrew shelf resolves the core from the file  ${JSON.stringify(got)}`);
+    // Every value here must be a core the runtime publishes (tools/test.mjs checks
+    // the list), which is why the file-extension answer is fceumm/snes9x and not a
+    // console code - a console code is exactly what makes the loader 404.
+    const okCore = got.nesFile === "fceumm" && got.snesName === "snes9x" && got.zipFile === null && got.forced === "gambatte"
+      && got.normalShelf === "gambatte" && got.corelessDeck === null;
+    console.log(`${okCore ? "ok  " : "FAIL"}  cores resolve from files, and a coreless deck resolves nothing  ${JSON.stringify(got)}`);
+    const { SYSTEM_BY_ID } = await import("../js/data/systems.js");
+    const dc = SYSTEM_BY_ID.dreamcast;
+    const okNoCore = Boolean(dc) && dc.ejsCore === null && dc.cores.length === 0 && typeof dc.noCore === "string";
+    console.log(`${okNoCore ? "ok  " : "FAIL"}  the coreless deck carries the sentence the player shows  "${String(dc?.noCore).slice(0, 42)}..."`);
+    allOk = okNoCore && allOk;
     allOk = okCore && allOk;
     const { SYSTEMS } = await import("../js/data/systems.js");
     const auto = SYSTEMS.filter((sys) => pickCore(sys.id, { ext: "bin" }) === "auto").map((sys) => sys.id);
@@ -358,6 +368,23 @@ async function deepPass() {
     const orphans = (hb.exts || []).filter((e) => !["zip", "7z"].includes(e) && !coreForExt(e));
     console.log(`${orphans.length ? "FAIL" : "ok  "}  homebrew extensions all map to a core            ${orphans.join(",") || hb.exts.length + " extensions"}`);
     allOk = (orphans.length === 0) && allOk;
+  }
+
+  // 5d. no deck may render an empty choice anywhere: a select with no options is
+  // how a form advertises a setting it cannot honour.
+  {
+    const { configForm } = await import("../js/views/config.js");
+    const { SYSTEMS } = await import("../js/data/systems.js");
+    const walk = (node, out = []) => { for (const c of node.childNodes || []) { out.push(c); walk(c, out); } return out; };
+    const empty = [];
+    for (const s of SYSTEMS) {
+      let el;
+      try { el = configForm({ sysId: s.id, cfg: {}, set() {}, scope: "system" }); }
+      catch (err) { empty.push(`${s.id}: threw ${err.message}`); continue; }
+      for (const n of walk(el)) if (String(n.tagName || "").toLowerCase() === "select" && !(n.childNodes || []).length) empty.push(`${s.id}: a select with no options`);
+    }
+    console.log(`${empty.length ? "FAIL" : "ok  "}  every deck's config form has a choice for every row    ${empty.slice(0, 3).join(" | ") || SYSTEMS.length + " forms rendered"}`);
+    allOk = (empty.length === 0) && allOk;
   }
 
   // 6. settings: warm-cache button and key capture must not throw

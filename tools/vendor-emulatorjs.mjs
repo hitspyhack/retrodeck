@@ -3,11 +3,21 @@
  * no network at all - the difference between "works on my laptop" and "works on
  * a phone in a train, installed to the home screen".
  *
- *   npm run vendor                     the 13 cores the app's warm-cache offers
- *   npm run vendor -- --cores nes,gba   exactly these cores
- *   npm run vendor -- --all             every core the CDN has (hundreds of MB)
+ *   npm run vendor                      every core this app's decks boot by default
+ *   npm run vendor -- --cores gambatte   exactly these cores (comma separated)
+ *   npm run vendor -- --all              every core the CDN has (hundreds of MB)
+ *   npm run vendor -- --threads          also mirror the -thread- build of each core
+ *
+ * What a mirror is made of, per the layout upstream actually publishes (checked
+ * against https://cdn.emulatorjs.org/stable/data/, and recorded in
+ * data/source/emulatorjs.json): the runtime is three files next to the loader -
+ * loader.js, emulator.min.js, emulator.min.css - and each core is ONE blob,
+ * data/cores/<name>-wasm.data, with -thread- and -legacy- siblings for browsers
+ * with or without SharedArrayBuffer. There are no per-core .js/.wasm pairs and no
+ * data/wasm/ directory; a tool that asked for those would mirror nothing at all.
  *   npm run vendor -- --list            show what would be fetched and stop
  *   npm run vendor -- --base <url>      point at a mirror instead of the CDN
+ *   npm run vendor -- --full            every core any deck can be configured to use
  *   npm run vendor -- --out <dir>       write somewhere else (used by tests)
  *
  * Files land in `vendor/data/` (or `--out <dir>`) with the same layout the CDN uses, because
@@ -35,6 +45,9 @@ const flag = (name, dflt = undefined) => {
 };
 const LIST = Boolean(flag("list", false));
 const ALL = Boolean(flag("all", false));
+const THREADS = Boolean(flag("threads", false));
+const LEGACY = Boolean(flag("legacy", false));
+const FULL = Boolean(flag("full", false));
 const FORCE = Boolean(flag("force", false));
 const VERSION = String(flag("version", "") || "");
 const BASE = String(flag("base", "") || "");
@@ -42,42 +55,57 @@ const CORES_ARG = String(flag("cores", "") || "");
 const OUT_ARG = flag("out", "");
 if (typeof OUT_ARG === "string" && OUT_ARG) OUT = resolve(OUT_ARG);
 
-/** The cores RetroDeck offers per system; the default download set. */
-const DEFAULT_CORES = [
-  "nes", "snes", "n64", "gambatte", "mgba", "vba_next", "mednafen_ngp", "mednafen_pce_fast",
-  "genesis_plus_gx", "picodrive", "mednafen_supafaust", "fbneo", "prboom", "atari2600",
-  "atari7800", "handy", "mednafen_wswan", "vice_x64", "pcsx_rearmed", "melonds", "parallel_n64",
-];
+/** What every boot needs, whatever the game is. */
+const COMMON = ["loader.js", "emulator.min.js", "emulator.min.css", "version.json", "cores/cores.json"];
 
-const COMMON = [
-  "loader.js",
-  "version.json",
-  "cover.png",
-  "wasm/rt-wasm.js",
-  "wasm/rt-wasm.data",
-  "wasm/rt-wasm.shim.js",
-];
+/** Suffix of the core blob, by build flavour. */
+const FLAVOUR = { plain: "-wasm.data", thread: "-thread-wasm.data", legacy: "-legacy-wasm.data" };
+
+/**
+ * The cores this app can boot, in deck order, deduped. Default is what each deck
+ * actually starts with; `--full` adds the alternates the config form offers, so a
+ * mirror can be as small as "the 24 cores I play" or as wide as the whole app.
+ */
+function deckCores(systems, withAlts = false) {
+  const out = [];
+  const push = (c) => { if (c && c !== "auto" && !out.includes(c)) out.push(c); };
+  for (const s of systems) {
+    push(s.ejsCore);
+    if (withAlts) for (const c of (s.cores || []).map((x) => x.id)) push(c);
+  }
+  return out;
+}
 
 async function main() {
   const { SYSTEMS } = await import("../js/data/systems.js");
-  const known = new Set(SYSTEMS.flatMap((s) => (s.cores || []).map((c) => c.id)).concat(SYSTEMS.map((s) => s.ejsCore).filter(Boolean)));
-
-  let cores = DEFAULT_CORES.filter((c) => known.has(c) || true);
-  if (CORES_ARG) {
-    cores = CORES_ARG.split(",").map((c) => c.trim()).filter(Boolean);
-    const unknown = cores.filter((c) => !known.has(c));
-    if (unknown.length) console.warn(`note: not referenced by any system in js/data/systems.js: ${unknown.join(", ")}`);
+  const offered = deckCores(SYSTEMS, true);
+  // Upstream's own list, when the snapshot is in the repo: a core name that is not
+  // in it cannot be mirrored, so say that before downloading anything.
+  let published = null;
+  try {
+    published = new Set(JSON.parse(readFileSync(join(ROOT, "data", "source", "emulatorjs.json"), "utf8")).cores.map((c) => c.name));
+  } catch {
+    /* snapshot missing (fresh checkout without data/source?) - fall back to trusting the name */
   }
-  if (ALL) cores = [...known].sort();
 
+  let cores = FULL ? deckCores(SYSTEMS, true) : deckCores(SYSTEMS);
+  if (CORES_ARG) cores = CORES_ARG.split(",").map((c) => c.trim()).filter(Boolean);
+  if (ALL) cores = published ? [...published].sort() : offered;
+  const bogus = published ? cores.filter((c) => !published.has(c)) : [];
+  if (bogus.length && !FORCE) {
+    console.error(`\n${bogus.length} name(s) are not cores EmulatorJS publishes: ${bogus.join(", ")}`);
+    console.error("Cores are named after the emulator (gambatte, snes9x, fceumm), not the console (gb, snes, nes).");
+    console.error("data/source/emulatorjs.json is the list; --force mirrors what you asked for anyway.");
+    process.exit(1);
+  }
+  // The coreless decks (ejsCore: null) are how a console with no upstream core is
+  // represented; they must never reach the download list as the string "null".
+  cores = cores.filter(Boolean);
+
+  const flavours = THREADS ? ["plain", "thread"] : ["plain"];
   const files = [...COMMON];
-  for (const core of cores) {
-    files.push(`cores/${core}.js`, `cores/${core}.wasm`);
-    // a couple of cores ship extra data or a second module
-    if (/mupen|parallel|mednafen|fbneo|vice|prboom|pcsx|melonds|picodrive|genesis/.test(core)) {
-      files.push(`cores/${core}.data`);
-    }
-  }
+  for (const core of cores) for (const f of flavours) files.push(`cores/${core}${FLAVOUR[f]}`);
+  if (LEGACY) for (const core of cores) files.push(`cores/${core}${FLAVOUR.legacy}`);
 
   const base = BASE || `https://cdn.emulatorjs.org/${VERSION || "stable"}/data/`;
   const urlFor = (rel) => `${base.replace(/\/$/, "")}/${rel}`;
@@ -86,7 +114,7 @@ async function main() {
   console.log(`EmulatorJS payload`);
   console.log(`  source  ${base}`);
   console.log(`  target  ${OUT}`);
-  console.log(`  cores   ${cores.length}${ALL ? " (all known to this app)" : ""}`);
+  console.log(`  cores   ${cores.length}${ALL ? " (everything upstream has)" : CORES_ARG || FULL ? "" : " (each deck's default; --full adds the alternates)"}`);
   console.log(`  files   ${files.length}`);
 
   if (LIST) {
@@ -95,7 +123,9 @@ async function main() {
   }
 
   // not every core ships the extra files, so a 404 on these is a shrug, not a failure
-  const optional = (f) => /\.data$/.test(f) || f === "cover.png" || f === "wasm/rt-wasm.shim.js";
+  // The plain blob is what a core is; a flavour a browser cannot use is simply
+  // not published for that core, which is a shrug and not a failed mirror.
+  const optional = (f) => !/-wasm\.data$/.test(f) || /-(thread|legacy)-wasm\.data$/.test(f);
   // files the upstream does not actually publish: remembered between runs so a
   // second `npm run vendor` says "nothing to do" instead of re-404-ing them
   const knownMissing = new Set(prevManifest()?.optionalMissing || []);
@@ -122,7 +152,7 @@ async function main() {
   const optionalMissing = [...new Set([...skippedSoft, ...soft.map((r) => r.file)])];
   writeManifest({ base, cores, files, fetched: results.length - failed.length, skipped: have.length, optionalMissing, failed: failed.map((f) => `${f.file}: ${f.error}`) });
 
-  if (optionalMissing.length) console.log(`  note    ${optionalMissing.length} optional file(s) upstream does not publish (normal for .data / cover.png)`);
+  if (optionalMissing.length) console.log(`  note    ${optionalMissing.length} optional flavour(s) not published for those cores (thread/legacy builds)`);
   if (failed.length) {
     console.error(`\n${failed.length} file(s) did not download:`);
     for (const f of failed.slice(0, 12)) console.error(`  - ${f.file}: ${f.error}`);
@@ -200,6 +230,7 @@ function writeManifest(info) {
     tool: "retrodeck/tools/vendor-emulatorjs.mjs",
     at: new Date().toISOString(),
     version: info.base.includes("cdn.emulatorjs.org") ? decodeURIComponent(info.base.split("/data/")[0].split("/").pop()) : "custom",
+    layout: "cores/<name>-wasm.data (+ -thread-/-legacy- siblings), loader.js, emulator.min.{js,css}, cores/cores.json",
     source: info.base,
     cores: info.cores,
     files: info.files.length,

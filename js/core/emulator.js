@@ -25,7 +25,14 @@ import { ejsControls } from "./pad.js";
 import { SYSTEMS, SYSTEM_BY_ID } from "../data/systems.js";
 import { MODEL_BY_ID } from "../data/models.js";
 
-export const CDN_VERSIONS = ["stable", "latest", "4.2.4", "nightly"];
+/**
+ * Channels the app can boot a payload from. These are real directories on the
+ * CDN, snapshotted in `data/source/emulatorjs.json` (re-run
+ * `node tools/refresh-runtime.mjs` to refresh it) - `tools/test.mjs` fails if a
+ * name here is not one of the channels the CDN actually publishes. There is no
+ * `latest` or `nightly` directory, so offering them would be a broken dropdown.
+ */
+export const CDN_VERSIONS = ["stable", "4.2.3", "4.2.2", "4.2.1", "4.2.0", "4.1.1"];
 
 export function dataBase() {
   const src = store.get("emulator.source", "cdn");
@@ -241,6 +248,11 @@ export class EmuPlayer {
     const biosUrl = await this.#biosUrl();
     const core = pickCore(this.o.systemId, { ...this.cfg, ext: this.o.game?.ext, fileName: this.o.rom?.name });
     this.coreName = core;
+    if (!core && this.system?.noCore) {
+      // Do not spend a request on a core the runtime does not ship.
+      this.#emit("error", { code: "no-core", msg: this.system.noCore });
+      return false;
+    }
     const options = {
       "save-state-location": store.get("emulator.saveStateLocation", "browser"),
       "rewind_granularity": 2,
@@ -480,7 +492,11 @@ export function pickCore(systemId, config = {}) {
   if (config.core && config.core !== "auto") return config.core;
   const ov = store.get(["emulator", "cores", systemId].join("."));
   if (ov && ov !== "auto") return ov;
-  const declared = SYSTEM_BY_ID[systemId]?.ejsCore || systemId;
+  const sys = SYSTEM_BY_ID[systemId];
+  // An absent field means a deck that never went through the table (older saved
+  // config), so fall back to the system id; an explicit null means the opposite -
+  // upstream publishes no core for this console, and there is nothing to fetch.
+  const declared = sys && "ejsCore" in sys ? sys.ejsCore : systemId;
   // "auto" is the homebrew shelf: one shelf, many consoles. Ask the extension
   // which console owns it; if nobody claims it, return null and let the loader
   // guess, rather than fetching a core literally named "auto".
@@ -499,7 +515,11 @@ export function coreForExt(extOrName) {
   if (!ext || ext === "zip" || ext === "7z") return null;
   for (const s of SYSTEMS) {
     if (s.id === "homebrew" || s.ejsCore === "auto") continue;
-    if ((s.exts || []).includes(ext)) return s.ejsCore || null;
+    // A deck with no core (ejsCore: null) must not win the race for a shared
+    // extension: .bin/.cue/.iso belong to several shelves, and returning null
+    // because Dreamcast was listed first would leave the loader guessing.
+    if (!s.ejsCore) continue;
+    if ((s.exts || []).includes(ext)) return s.ejsCore;
   }
   return null;
 }

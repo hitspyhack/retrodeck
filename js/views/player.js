@@ -316,10 +316,14 @@ export class PlayerView {
   emuError(ev) {
     const load = this.screenHost.querySelector("#load");
     const body = h("div", { style: { display: "grid", gap: "10px", maxWidth: "420px" } },
-      h("b", {}, ev.code === "core-timeout" ? "The emulator never answered" : "The core could not load"),
+      h("b", {}, ev.code === "core-timeout" ? "The emulator never answered" : ev.code === "no-core" ? "This console has no core in the runtime" : "The core could not load"),
       h("p.small.muted", {}, ev.msg || "unknown error"),
-      h("div.notice", {}, h("span", {}, "Three ways out: pick another core for this deck, play one of the six built-in titles (they need nothing from the network), or mirror EmulatorJS into ", h("code", {}, "vendor/"), " with ", h("code", {}, "npm run vendor"), " and reload.")),
-      h("p.small.muted", {}, `It asked for `, h("code", {}, `cores/${ev.core || this.cfg.core || this.sys.ejsCore}`), ` - a mirror without that core answers 404, and the shelf config lists the ones the deck can boot.`),
+      ev.code === "no-core"
+        ? h("div.notice", {}, h("span", {}, "Nothing was fetched - the deck knows it cannot boot this format. The library, the shells and the saves still work, and the other 25 decks have cores."))
+        : h("div.notice", {}, h("span", {}, "Three ways out: pick another core for this deck, play one of the six built-in titles (they need nothing from the network), or mirror EmulatorJS into ", h("code", {}, "vendor/"), " with ", h("code", {}, "npm run vendor"), " and reload.")),
+      ev.code === "no-core"
+        ? h("p.small.muted", {}, h("code", {}, `npm run vendor -- --list`), " prints the cores your mirror does have.")
+        : h("p.small.muted", {}, `It asked for `, h("code", {}, `cores/${ev.core || this.cfg.core || this.sys.ejsCore}`), ` - a mirror without that core answers 404, and the shelf config lists the ones the deck can boot.`),
       h("div.notice__row", {},
         h("button.btn.btn--sm.btn--primary", { onclick: () => (location.hash = "#/play/builtin:chomp") }, "Play Maze Chomp"),
         h("button.btn.btn--sm", { onclick: () => this.retry() }, "Try again"),

@@ -33,10 +33,16 @@ export function configForm({ sysId, modelId, cfg = {}, set, scope = "system" }) 
         ["", `Let RetroDeck choose (${defaultModelLabel(sysId)})`],
         ...modelsFor(sysId).map((m) => [m.id, `${m.name} · ${m.year || ""}`]),
       ], (v) => set({ model: v || null }), "drives shell art, screen box, pad and skin"),
-      select("Emulator core", cfg.core || sys?.ejsCore || "", [
-        ...(sys?.cores || []).map((c) => [c.id, c.label]),
-      ], (v) => set({ core: v }), "same console, different accuracy"),
-      select("Controller layout", cfg.pad || model?.pad || sys?.pad || "", padsFor(sysId).map((p) => [p, `${PADS[p].name}${PADS[p].aka ? ` - ${PADS[p].aka}` : ""}`]),
+      // A deck with no core upstream shows the reason rather than an empty
+      // dropdown: picking from nothing is what a form should never do.
+      (sys?.cores || []).length
+        ? select("Emulator core", cfg.core || sys?.ejsCore || "", [
+          ...(sys?.cores || []).map((c) => [c.id, c.label]),
+        ], (v) => set({ core: v }), "same console, different accuracy")
+        : h("div.row", {},
+          h("span.row__label", {}, "Emulator core", h("small.muted", {}, "nothing this deck can boot")),
+          h("p.small.muted", {}, sys?.noCore || "This runtime publishes no core for this console.")),
+      select("Controller layout", cfg.pad || model?.pad || sys?.pad || "", padsFor(sys).map((p) => [p, `${PADS[p].name}${PADS[p].aka ? ` - ${PADS[p].aka}` : ""}`]),
         (v) => set({ pad: v }), "which buttons you get on screen"),
       sys?.bios ? h("div.row", {},
         h("span.row__label", {}, "BIOS image", h("small.muted", {}, sys.bios.label || "required by the core")),

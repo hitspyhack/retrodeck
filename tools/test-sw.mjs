@@ -222,19 +222,22 @@ network.set(gamesJson, resp(gamesJson));
   expect("a Range request is left to the server", !r.intercepted);
 }
 {
-  const url = `${origin}/vendor/data/cores/nes.js`;
+  const url = `${origin}/vendor/data/cores/gambatte-wasm.data`;
   const r = await run(url);
   expect("/vendor/ is left to the server's immutable caching", !r.intercepted);
 }
 {
-  const url = "https://cdn.emulatorjs.org/stable/data/cores/nes.wasm";
+  const url = "https://cdn.emulatorjs.org/stable/data/cores/loose-core.wasm";
   const r = await run(url);
-  expect("a core payload (.wasm) on the CDN is left to the runtime's own cache", !r.intercepted);
+  expect("a loose .wasm on the CDN is left to the runtime's own cache", !r.intercepted);
 }
 {
-  const url = "https://cdn.emulatorjs.org/stable/data/wasm/rt-wasm.data";
+  // what upstream actually ships per core: one blob, tens of megabytes. The
+  // emulator keeps these in its own storage; the worker caching them too would
+  // push the app's own files out of a 48 MB budget.
+  const url = "https://cdn.emulatorjs.org/stable/data/cores/gambatte-wasm.data";
   const r = await run(url);
-  expect("a .data blob is left alone too", !r.intercepted);
+  expect("a core blob (cores/<name>-wasm.data) is left alone", !r.intercepted);
 }
 {
   // the loader script is small, and a cold offline start needs it

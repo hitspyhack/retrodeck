@@ -122,6 +122,22 @@ check("systems: pads, buttons, cores and extensions line up", () => {
   const BEHAVIOUR_FLAGS = ["saveStates", "cheats", "netplay", "linkCable", "zapper", "vs", "tape", "solar", "touch", "vmu", "tuner", "keyboard", "wifi", "sram", "sixButton"];
   const KEY_RE = /^(Key[A-Z]|Digit\d|Arrow(Up|Down|Left|Right)|Space|Enter|Escape|Tab|Backspace|ShiftLeft|ShiftRight|ControlLeft|ControlRight|AltLeft|AltRight|Numpad\d|KeyM|Comma|Period|Slash|Semicolon|Quote|Bracket(Left|Right)|Minus|Equal|Backquote|Backslash)$/;
   const bad = [];
+  // Upstream's own list of what EJS_core may be set to, snapshotted in the repo by
+  // tools/refresh-runtime.mjs. Every core name below is checked against it, which
+  // is the only defence against the class of bug where a deck points at "nes" or
+  // "segaMD" - the console's code, not a core - and the loader answers 404 for all
+  // 26 decks at once. Nothing in the app's own code can catch that; this file can.
+  let runtime;
+  try {
+    runtime = JSON.parse(readFileSync(join(ROOT, "data", "source", "emulatorjs.json"), "utf8"));
+  } catch {
+    throw new Error("data/source/emulatorjs.json is missing - run: node tools/refresh-runtime.mjs");
+  }
+  const PUBLISHED = new Map(runtime.cores.map((c) => [c.name, new Set(c.extensions)]));
+  if (!PUBLISHED.size) throw new Error("the runtime snapshot has no cores in it");
+  // Containers the runtime unpacks itself, plus aliases a core loads happily
+  // because we name EJS_core instead of letting the extension pick the core.
+  const CONTAINERS = new Set(["zip", "7z", "gz", "m3u", "cue", "chd", "iso", "bin", "img", "mds", "nrg", "gdi", "conf", "exe", "dosbox", "agb", "rom"]);
   for (const s of SYSTEMS) {
     if (!Array.isArray(s.exts) || !s.exts.length) bad.push(`${s.id}: no exts`);
     for (const e of s.exts || []) if (!/^[a-z0-9]{1,8}$/.test(e)) bad.push(`${s.id}: odd ext "${e}"`);
@@ -150,13 +166,30 @@ check("systems: pads, buttons, cores and extensions line up", () => {
     // the core a deck boots is cores[0] - the config form offers that list, the
     // player passes the first entry, so the two must never disagree
     const coreIds = (s.cores || []).map((c) => c.id);
-    if (!coreIds.length) bad.push(`${s.id}: no cores[] to boot`);
-    if (s.ejsCore !== coreIds[0]) bad.push(`${s.id}: ejsCore "${s.ejsCore}" is not cores[0].id "${coreIds[0]}"`);
+    // noCore: the honest way to keep a console in the library when the runtime has
+    // nothing for it. It must offer no core, and explain itself in a sentence.
+    if (s.noCore) {
+      if (s.ejsCore !== null) bad.push(`${s.id}: a noCore deck must set ejsCore to null, got ${JSON.stringify(s.ejsCore)}`);
+      if (coreIds.length) bad.push(`${s.id}: a noCore deck must not offer cores (${coreIds.join(",")})`);
+      if (typeof s.noCore !== "string" || s.noCore.length < 40) bad.push(`${s.id}: noCore has to be a sentence the player can show (got ${JSON.stringify(s.noCore)})`);
+    } else {
+      if (!coreIds.length) bad.push(`${s.id}: no cores[] to boot, and no noCore note to say why`);
+      if ((s.ejsCore ?? null) !== (coreIds[0] ?? null)) bad.push(`${s.id}: ejsCore "${s.ejsCore}" is not cores[0].id "${coreIds[0]}"`);
+      if (s.ejsCore !== "auto" && !PUBLISHED.has(s.ejsCore)) bad.push(`${s.id}: ejsCore "${s.ejsCore}" is not a published core`);
+    }
+    // and every format the deck claims to accept must be one of its cores' formats,
+    // or a container/alias - otherwise the deck promises a file the core refuses
+    if (!s.noCore && s.ejsCore !== "auto") {
+      const reads = new Set();
+      for (const c of coreIds) for (const e of PUBLISHED.get(c) || []) reads.add(e);
+      for (const e of s.exts || []) if (!reads.has(e) && !CONTAINERS.has(e)) bad.push(`${s.id}: ext "${e}" is read by none of its cores (${coreIds.join(", ")})`);
+    }
     for (const c of s.cores || []) {
       if (!c.id || !c.label) bad.push(`${s.id}: core entry needs id+label`);
-      // a core id ends up as `data/cores/<id>.js`, so it must be a path-safe
-      // token; uppercase is legal because a few decks boot the system id itself
-      if (c.id !== "auto" && !/^[A-Za-z0-9][A-Za-z0-9_./-]{0,31}$/.test(c.id)) bad.push(`${s.id}: core id "${c.id}" cannot be a path segment under data/cores/`);
+      // the blob is fetched as `data/cores/<id>-wasm.data`, so the id must be a
+      // path-safe token
+      if (c.id !== "auto" && !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,31}$/.test(c.id)) bad.push(`${s.id}: core id "${c.id}" cannot be a path segment under data/cores/`);
+      if (c.id !== "auto" && !PUBLISHED.has(c.id)) bad.push(`${s.id}: core "${c.id}" is not a core EmulatorJS ${runtime.stableVersion} publishes (data/source/emulatorjs.json has ${PUBLISHED.size})`);
     }
     if (s.bios && !s.bios.label) bad.push(`${s.id}: bios without label`);
     if (!/^#[0-9a-f]{6}$/i.test(s.color || "")) bad.push(`${s.id}: color "${s.color}"`);
@@ -166,16 +199,25 @@ check("systems: pads, buttons, cores and extensions line up", () => {
   // "auto" is only allowed for a shelf that can resolve a core from the file:
   // every core it offers must be a real deck's core, and every extension it
   // accepts (archives excepted) must belong to a deck that can name one.
-  const realCores = new Set(SYSTEMS.filter((x) => x.ejsCore !== "auto").map((x) => x.ejsCore));
   for (const s of SYSTEMS.filter((x) => x.ejsCore === "auto")) {
-    for (const c of s.cores || []) if (c.id !== "auto" && !realCores.has(c.id)) bad.push(`${s.id}: core "${c.id}" is not any deck's ejsCore - the loader would 404`);
-    for (const e of s.exts || []) {
-      if (e === "zip" || e === "7z") continue;
-      if (!SYSTEMS.some((x) => x.id !== s.id && x.ejsCore !== "auto" && (x.exts || []).includes(e))) bad.push(`${s.id}: ext "${e}" belongs to no deck that has a core`);
+    const offered = new Set(SYSTEMS.filter((x) => x.ejsCore !== "auto").flatMap((x) => [x.ejsCore, ...(x.cores || []).map((c) => c.id)]));
+    for (const c of s.cores || []) {
+      if (c.id === "auto") continue;
+      if (!offered.has(c.id)) bad.push(`${s.id}: core "${c.id}" is offered by no deck - forcing it from the config form would boot a foreign core`);
+      if (!PUBLISHED.has(c.id)) bad.push(`${s.id}: core "${c.id}" is not a published core`);
     }
+    // the shelf reads the file to decide the core, so every extension it accepts
+    // must be readable by a core the shelf can actually name
+    const readable = new Set();
+    for (const c of s.cores || []) for (const e of PUBLISHED.get(c.id) || []) readable.add(e);
+    for (const e of s.exts || []) if (!readable.has(e) && !CONTAINERS.has(e)) bad.push(`${s.id}: ext "${e}" cannot be forced to a core (no core in its list reads it)`);
   }
+  // Settings ▸ Emulator ▸ Channel must only contain directories the CDN has.
+  const channels = new Set(runtime.channels);
+  for (const v of emulatorMod.CDN_VERSIONS) if (!channels.has(v)) bad.push(`CDN_VERSIONS: "${v}" is not a channel upstream publishes (${runtime.channels.join(", ")})`);
+  if (runtime.stableVersion && !emulatorMod.CDN_VERSIONS.slice(1).includes(runtime.stableVersion)) bad.push(`CDN_VERSIONS: the current stable (${runtime.stableVersion}) is not selectable`);
   if (bad.length) throw new Error(bad.slice(0, 10).join("\n"));
-  return `${SYSTEMS.length} systems`;
+  return `${SYSTEMS.length} systems, ${PUBLISHED.size} published cores, ${runtime.cores.reduce((a, c) => a + (c.name && SYSTEMS.some((s) => s.ejsCore === c.name) ? 1 : 0), 0)} of them a deck's default`;
 });
 
 check("every pad id a system advertises exists in layouts.js, and vice versa", () => {

@@ -1,0 +1,687 @@
+{
+ "source": "https://cdn.emulatorjs.org",
+ "retrieved": "2026-10-19",
+ "stableVersion": "4.2.3",
+ "channels": [
+  "stable",
+  "4.2.3",
+  "4.2.2",
+  "4.2.1",
+  "4.2.0",
+  "4.1.1",
+  "4.0.12"
+ ],
+ "cores": [
+  {
+   "name": "vice_x64",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ]
+  },
+  {
+   "name": "vice_x64sc",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ]
+  },
+  {
+   "name": "vice_x128",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ]
+  },
+  {
+   "name": "vice_xpet",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ]
+  },
+  {
+   "name": "vice_xplus4",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ]
+  },
+  {
+   "name": "vice_xvic",
+   "extensions": [
+    "d64",
+    "d6z",
+    "d71",
+    "d7z",
+    "d80",
+    "d81",
+    "d82",
+    "d8z",
+    "g64",
+    "g6z",
+    "g41",
+    "g4z",
+    "x64",
+    "x6z",
+    "nib",
+    "nbz",
+    "d2m",
+    "d4m",
+    "t64",
+    "tap",
+    "tcrt",
+    "prg",
+    "p00",
+    "crt",
+    "bin",
+    "cmd",
+    "m3u",
+    "vfl",
+    "vsf",
+    "zip",
+    "7z",
+    "gz",
+    "20",
+    "40",
+    "60",
+    "a0",
+    "b0",
+    "rom"
+   ]
+  },
+  {
+   "name": "fceumm",
+   "extensions": [
+    "fds",
+    "nes",
+    "unif",
+    "unf"
+   ]
+  },
+  {
+   "name": "nestopia",
+   "extensions": [
+    "fds",
+    "nes",
+    "unif",
+    "unf"
+   ]
+  },
+  {
+   "name": "snes9x",
+   "extensions": [
+    "smc",
+    "sfc",
+    "swc",
+    "fig",
+    "bs",
+    "st"
+   ]
+  },
+  {
+   "name": "gambatte",
+   "extensions": [
+    "gb",
+    "gbc",
+    "dmg"
+   ]
+  },
+  {
+   "name": "mgba",
+   "extensions": [
+    "gb",
+    "gbc",
+    "gba"
+   ]
+  },
+  {
+   "name": "beetle_vb",
+   "extensions": [
+    "vb",
+    "vboy",
+    "bin"
+   ]
+  },
+  {
+   "name": "mupen64plus_next",
+   "extensions": [
+    "n64",
+    "v64",
+    "z64",
+    "bin",
+    "u1",
+    "ndd",
+    "gb"
+   ]
+  },
+  {
+   "name": "melonds",
+   "extensions": [
+    "nds"
+   ]
+  },
+  {
+   "name": "desmume2015",
+   "extensions": [
+    "nds",
+    "bin"
+   ]
+  },
+  {
+   "name": "desmume",
+   "extensions": [
+    "nds",
+    "bin"
+   ]
+  },
+  {
+   "name": "a5200",
+   "extensions": [
+    "a52",
+    "bin"
+   ]
+  },
+  {
+   "name": "fbalpha2012_cps1",
+   "extensions": [
+    "zip"
+   ]
+  },
+  {
+   "name": "fbalpha2012_cps2",
+   "extensions": [
+    "zip"
+   ]
+  },
+  {
+   "name": "prosystem",
+   "extensions": [
+    "a78",
+    "bin"
+   ]
+  },
+  {
+   "name": "stella2014",
+   "extensions": [
+    "a26",
+    "bin",
+    "zip"
+   ]
+  },
+  {
+   "name": "opera",
+   "extensions": [
+    "iso",
+    "bin",
+    "chd",
+    "cue"
+   ]
+  },
+  {
+   "name": "genesis_plus_gx",
+   "extensions": [
+    "m3u",
+    "mdx",
+    "md",
+    "smd",
+    "gen",
+    "bin",
+    "cue",
+    "iso",
+    "chd",
+    "bms",
+    "sms",
+    "gg",
+    "sg",
+    "68k",
+    "sgd"
+   ]
+  },
+  {
+   "name": "yabause",
+   "extensions": [
+    "cue",
+    "iso",
+    "ccd",
+    "mds",
+    "chd",
+    "zip",
+    "m3u"
+   ]
+  },
+  {
+   "name": "handy",
+   "extensions": [
+    "lnx"
+   ]
+  },
+  {
+   "name": "virtualjaguar",
+   "extensions": [
+    "j64",
+    "jag",
+    "rom",
+    "abs",
+    "cof",
+    "bin",
+    "prg"
+   ]
+  },
+  {
+   "name": "pcsx_rearmed",
+   "extensions": [
+    "bin",
+    "cue",
+    "img",
+    "mdf",
+    "pbp",
+    "toc",
+    "cbn",
+    "m3u",
+    "ccd"
+   ]
+  },
+  {
+   "name": "picodrive",
+   "extensions": [
+    "bin",
+    "gen",
+    "smd",
+    "md",
+    "32x",
+    "cue",
+    "iso",
+    "sms",
+    "68k",
+    "chd"
+   ]
+  },
+  {
+   "name": "fbneo",
+   "extensions": [
+    "zip",
+    "7z"
+   ]
+  },
+  {
+   "name": "mednafen_psx_hw",
+   "extensions": [
+    "cue",
+    "toc",
+    "m3u",
+    "ccd",
+    "exe",
+    "pbp",
+    "chd"
+   ]
+  },
+  {
+   "name": "mednafen_pce",
+   "extensions": [
+    "pce",
+    "cue",
+    "ccd",
+    "iso",
+    "img",
+    "bin",
+    "chd"
+   ]
+  },
+  {
+   "name": "mednafen_pcfx",
+   "extensions": [
+    "cue",
+    "ccd",
+    "toc",
+    "chd"
+   ]
+  },
+  {
+   "name": "mednafen_ngp",
+   "extensions": [
+    "ngp",
+    "ngc"
+   ]
+  },
+  {
+   "name": "mednafen_wswan",
+   "extensions": [
+    "ws",
+    "wsc",
+    "pc2"
+   ]
+  },
+  {
+   "name": "gearcoleco",
+   "extensions": [
+    "col",
+    "cv",
+    "bin",
+    "rom"
+   ]
+  },
+  {
+   "name": "parallel_n64",
+   "extensions": [
+    "n64",
+    "v64",
+    "z64",
+    "bin",
+    "u1",
+    "ndd",
+    "gb"
+   ]
+  },
+  {
+   "name": "mame2003",
+   "extensions": [
+    "zip"
+   ]
+  },
+  {
+   "name": "mame2003_plus",
+   "extensions": [
+    "zip"
+   ]
+  },
+  {
+   "name": "puae",
+   "extensions": [
+    "adf",
+    "adz",
+    "dms",
+    "fdi",
+    "ipf",
+    "raw",
+    "hdf",
+    "hdz",
+    "lha",
+    "slave",
+    "info",
+    "cue",
+    "ccd",
+    "chd",
+    "nrg",
+    "mds",
+    "iso",
+    "uae",
+    "m3u",
+    "zip",
+    "7z"
+   ]
+  },
+  {
+   "name": "smsplus",
+   "extensions": [
+    "m3u",
+    "mdx",
+    "md",
+    "smd",
+    "gen",
+    "bin",
+    "cue",
+    "iso",
+    "chd",
+    "bms",
+    "sms",
+    "gg",
+    "sg",
+    "68k",
+    "sgd"
+   ]
+  },
+  {
+   "name": "81",
+   "extensions": [
+    "p",
+    "tzx",
+    "t81"
+   ]
+  },
+  {
+   "name": "fuse",
+   "extensions": [
+    "tzx",
+    "tap",
+    "z80",
+    "rzx",
+    "scl",
+    "trd"
+   ]
+  },
+  {
+   "name": "cap32",
+   "extensions": [
+    "dsk",
+    "sna",
+    "tap",
+    "cdt",
+    "voc",
+    "m3u",
+    "cpr",
+    "zip"
+   ]
+  },
+  {
+   "name": "crocods",
+   "extensions": [
+    "dsk",
+    "sna",
+    "kcr"
+   ]
+  },
+  {
+   "name": "prboom",
+   "extensions": [
+    "wad",
+    "iwad",
+    "pwad"
+   ]
+  },
+  {
+   "name": "ppsspp",
+   "extensions": [
+    "elf",
+    "iso",
+    "cso",
+    "prx",
+    "pbp"
+   ]
+  },
+  {
+   "name": "same_cdi",
+   "extensions": [
+    "chd",
+    "iso",
+    "cue"
+   ]
+  },
+  {
+   "name": "dosbox_pure",
+   "extensions": [
+    "conf"
+   ]
+  }
+ ]
+}

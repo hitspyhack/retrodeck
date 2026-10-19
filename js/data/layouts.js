@@ -17,6 +17,8 @@
  *   region   { x, y, w, h, id:'touch'|'fire', label }    // touchscreens / light guns
  *   keys     { x, y, w, h, rows, label }                 // mini keyboard
  */
+import { SYSTEM_BY_ID } from "./systems.js";
+
 
 const B = (id, x, y, s, label, style = "round", extra = {}) => ({
   t: "btn",
@@ -1138,10 +1140,20 @@ export const PADS = {
 export const PAD_IDS = Object.keys(PADS);
 
 /** Pads that are physically sane for this system (drives the control picker). */
+/**
+ * The layouts a console offers: its `pads` list, falling back to its default pad.
+ * Accepts the system object or its id - passing an id is the obvious thing to do
+ * at a call site, and `(sysId?.pads || [])` on a string is a silent empty list
+ * (which is exactly how the Controller layout dropdown once rendered no options
+ * in every deck while every test still passed).
+ */
 export function padsFor(system) {
-  const ids = (system?.pads || []).filter((id) => PADS[id]);
+  const sys = typeof system === "string" ? SYSTEM_BY_ID[system] : system;
+  const ids = (sys?.pads || []).filter((id) => PADS[id]);
   if (ids.length) return ids;
-  return [system?.pad].filter(Boolean);
+  const one = [sys?.pad].filter(Boolean);
+  if (one.length) return one;
+  throw new Error(`padsFor: ${sys ? sys.id : system} has no pads and no default pad`);
 }
 
 /** Which buttons a pad can emit, so the remap UI only shows real ones. */

@@ -9,7 +9,7 @@ import { store, fmtBytes } from "../core/store.js";
 import { SYSTEMS, SYSTEM_BY_ID } from "../data/systems.js";
 import { PADS } from "../data/layouts.js";
 import { vault } from "../core/idb.js";
-import { probeEmulator, localVendorPresent, dataBase, pickCore, CDN_VERSIONS } from "../core/emulator.js";
+import { probeEmulator, localVendorPresent, dataBase, CDN_VERSIONS } from "../core/emulator.js";
 import { h, mount, toggle, range, select, sectionTitle, toast, sheet, pickFiles, confirmSheet, copyText, download } from "../ui.js";
 import { keyGrid } from "./config.js";
 import { INDEX_META, BUILTINS, sysName } from "./parts.js";
@@ -149,7 +149,7 @@ export async function renderSettings(root, ctx) {
                 : "No local mirror here - run `npm run vendor` once and this install becomes fully offline. ",
           p.ok ? "The EmulatorJS CDN answered." : "The CDN did not answer (offline, or a policy blocking it)."),
         h("div.notice__row", {},
-          h("button.btn.btn--sm", { onclick: (e) => warm(e.currentTarget) }, "Warm the core cache"),
+          h("button.btn.btn--sm", { onclick: (e) => warm(e.currentTarget) }, "Warm the loader cache"),
           h("button.btn.btn--sm.btn--ghost", { onclick: () => { mount(box, h("span.small.muted", {}, "Checking…")); fill(); } }, "Re-check"),
           h("span.small.mono.muted", {}, `source: ${src} · ${g("emulator.version", "stable")}`)));
     }
@@ -158,9 +158,9 @@ export async function renderSettings(root, ctx) {
      * Hand the runtime's small files to whoever can keep them: the service
      * worker (Cache Storage, so a cold offline start still boots) and the
      * browser's own HTTP cache (which the core's loader reads directly).
-     * The .wasm payloads are deliberately not fetched here - the emulator
-     * caches those in IndexedDB, and pulling them twice would be a lot of
-     * megabytes for nothing.
+     * The core blobs (cores/<name>-wasm.data, tens of MB each) are deliberately
+     * not fetched here - the emulator caches those in IndexedDB, and pulling them
+     * twice would be a lot of megabytes for nothing.
      */
     async function warm(btn) {
       btn.disabled = true;
@@ -179,20 +179,18 @@ export async function renderSettings(root, ctx) {
         6000,
       );
       btn.disabled = false;
-      btn.textContent = "Warm the core cache";
+      btn.textContent = "Warm the loader cache";
     }
   }
 
   /**
-   * The urls the app would really ask for: each deck's chosen core, resolved
-   * through pickCore so this list cannot drift from what the player boots (a
-   * hand-written list here once warmed gambatte/mgba while the decks asked for
-   * gb/gba, which is a very confident way of caching the wrong files).
+   * The small files every boot asks the CDN for. Cores are deliberately absent:
+   * each one is a single tens-of-megabytes blob that EmulatorJS stores in its own
+   * IndexedDB, and the service worker refuses to double-cache big wasm/data files.
    */
   function coreUrls() {
     const base = dataBase().replace(/\/?$/, "/");
-    const cores = [...new Set(SYSTEMS.map((s) => pickCore(s.id, {})).filter(Boolean))].sort();
-    return [`${base}loader.js`, `${base}version.json`, `${base}wasm/rt-wasm.js`, ...cores.map((c) => `${base}cores/${c}.js`)];
+    return [`${base}loader.js`, `${base}emulator.min.js`, `${base}emulator.min.css`, `${base}version.json`, `${base}cores/cores.json`];
   }
 
   /* ----------------------------------------------------------- keyboard */

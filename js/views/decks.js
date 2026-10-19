@@ -145,6 +145,9 @@ function head(sys, model, ctx) {
       h("span.stat", {}, `${sys.bits}-bit`),
       model ? h("span.stat", {}, model.name) : null),
     h("p.muted.small", {}, sys.note || ""),
+    // A console this runtime has no core for says so on its own page, before you
+    // go looking for a disc image to import.
+    sys.noCore ? h("div.notice", {}, h("span", {}, sys.noCore)) : null,
     sys.aka?.length ? h("p.small.muted", {}, "Also known as: ", sys.aka.join(", ")) : null,
     h("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" } },
       h("button.btn.btn--sm.btn--ghost", { onclick: () => ctx.go("/decks") }, "◂ All hardware"),

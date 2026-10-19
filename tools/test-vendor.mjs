@@ -21,14 +21,20 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CDN = join(tmpdir(), "retrodeck-fake-cdn", "data");
 const OUT = join(tmpdir(), "retrodeck-vendor-test");
 
+// Exactly the shape upstream publishes (one blob per core, three shared runtime
+// files). A tool written against a guessed layout - cores/<name>.js + .wasm, a
+// wasm/rt-wasm.js that has never existed - would mirror nothing and still exit 0,
+// so this fixture is the smallest thing that catches that class of bug.
 const PAYLOAD = {
   "loader.js": "console.log('loader');\n",
+  "emulator.min.js": "/*! runtime */\n".repeat(200),
+  "emulator.min.css": "body{background:#000}\n",
   "version.json": JSON.stringify({ version: "test" }),
-  "wasm/rt-wasm.js": "// runtime\n".repeat(40),
-  "cores/nes.js": "// core module\n",
-  "cores/nes.wasm": "WASM".padEnd(9000, "x"),
-  "cores/snes.js": "// core module\n",
-  "cores/snes.wasm": "WASM".padEnd(21000, "y"),
+  "cores/cores.json": JSON.stringify([{ name: "fceumm", extensions: ["nes"] }, { name: "snes9x", extensions: ["sfc"] }]),
+  "cores/fceumm-wasm.data": "WASM".padEnd(9000, "x"),
+  "cores/snes9x-wasm.data": "WASM".padEnd(21000, "y"),
+  // only snes9x publishes a threaded build here, so the other one is a tolerated 404
+  "cores/snes9x-thread-wasm.data": "WASM".padEnd(20000, "z"),
 };
 
 rmSync(join(tmpdir(), "retrodeck-fake-cdn"), { recursive: true, force: true });
@@ -73,7 +79,7 @@ function run(args) {
   });
 }
 
-const first = await run(["--base", base, "--out", OUT, "--cores", "nes,snes"]);
+const first = await run(["--base", base, "--out", OUT, "--cores", "fceumm,snes9x", "--threads"]);
 say(first.code === 0, `first run exits 0 (got ${first.code})`);
 for (const [rel, body] of Object.entries(PAYLOAD)) {
   const p = join(OUT, "data", rel);
@@ -81,15 +87,21 @@ for (const [rel, body] of Object.entries(PAYLOAD)) {
   say(ok, `vendor/data/${rel} byte-identical${existsSync(p) ? ` (${statSync(p).size} B)` : " - MISSING"}`);
 }
 const manifest = JSON.parse(readFileSync(join(OUT, "manifest.json"), "utf8"));
-say(manifest.cores.join() === "nes,snes", `manifest lists the cores (${manifest.cores.join(", ")})`);
+say(manifest.cores.join() === "fceumm,snes9x", `manifest lists the cores (${manifest.cores.join(", ")})`);
+say(manifest.layout === "cores/<name>-wasm.data (+ -thread-/-legacy- siblings), loader.js, emulator.min.{js,css}, cores/cores.json", "manifest records the layout it mirrored");
 say(manifest.source === base, "manifest records where the payload came from");
 say(Array.isArray(manifest.optionalMissing) && manifest.optionalMissing.length > 0, `${manifest.optionalMissing?.length} optional 404s recorded instead of failing the run`);
 
-const second = await run(["--base", base, "--out", OUT, "--cores", "nes,snes"]);
+const second = await run(["--base", base, "--out", OUT, "--cores", "fceumm,snes9x", "--threads"]);
 say(second.code === 0 && /nothing to do/.test(second.out), "re-run is a no-op (idempotent)");
 say(!/fetch\s+\d/.test(second.out), "re-run fetches nothing");
 
-const dead = await run(["--base", "http://127.0.0.1:1/data/", "--out", OUT, "--force", "--cores", "nes"]);
+const dead = await run(["--base", "http://127.0.0.1:1/data/", "--out", OUT, "--force", "--cores", "fceumm"]);
+const typo = await run(["--base", base, "--out", OUT, "--cores", "nes,mednafen_supafaust"]);
+say(typo.code === 1, `a core EmulatorJS does not publish is refused before anything downloads (got ${typo.code})`);
+const named = (typo.out.match(/publishes: [^\n]+/) || [""])[0].trim();
+say(named === "publishes: nes, mednafen_supafaust", `and it names them instead of just failing  "${named}"`);
+say(/gambatte, snes9x, fceumm/.test(typo.out), "and points at the naming rule (cores are named after the emulator)");
 say(dead.code === 1, `unreachable mirror exits 1 (got ${dead.code})`);
 say(/did not download/.test(dead.out), "unreachable mirror says so in words");
 

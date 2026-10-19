@@ -48,12 +48,16 @@ case you want to attach it to something else.
 
 ## Formats, per family
 
+The authoritative list is the `exts` array of each entry in `js/data/systems.js`
+(and `npm test` refuses a deck that claims a format none of its cores can read).
+This table is the useful subset:
+
 | Console | Files the deck accepts | Notes |
 | --- | --- | --- |
 | NES | `.nes .fds .unf .zip` | .unf is the Universal NES format, useful for mappers the core alone does not know |
 | SNES | `.sfc .smc .fig .zip` | headered vs headerless is detected; BS-X dumps need the satellite BIOS |
 | N64 | `.z64 .v64 .n64 .ndd` | CIC-type detection is the core's job; some titles need the expansion pak in the model config |
-| GB / GBC | `.gb .gbc .sgb .zip` | a `.gb` on a GBC deck runs in dual-window colour; the DMG palette setting only affects the DMG models |
+| GB / GBC | `.gb .gbc .dmg .zip` | a `.gb` on a GBC deck runs in dual-window colour; the DMG palette setting only affects the DMG models |
 | GBA | `.gba .zip` | the 16 KB BIOS is optional but adds real boot, and some games check it |
 | NDS | `.nds .zip` | firmware + ARM7/ARM9 images are required, no exceptions |
 | Virtual Boy | `.vb .vboy` | the two-eye layout stays a single canvas; the shell art lies for you |
@@ -61,13 +65,13 @@ case you want to attach it to something else.
 | Mega Drive / Mark III | `.md .gen .smd .bin` | 3-button by default, 6-button per game, MO5/Team Tap settings under Deck options |
 | Sega CD / 32X / Saturn | `.cue .chd .bin .iso` | `.cue` + `.bin` is the pair the core actually reads; CHD is one file and much smaller |
 | PSX | `.cue .chd .bin .exe .pbp` | region-matched BIOS, or it hangs on the logo |
-| Dreamcast | `.chd .cue .gdi .cdi` | boot flash and IP.BIN handling live in the core; VMU shows as a second screen |
-| PC Engine / Turbo | `.pce .sgx .cue .chd` | Super Grafx needs the right core choice |
+| Dreamcast | — | **no core in this runtime**: EmulatorJS 4.x does not publish flycast, so the deck keeps the hardware, the catalogue and your settings and refuses to boot a disc. Saturn (`.cue .chd`) is the closest thing that runs |
+| PC Engine / Turbo | `.pce .cue .chd .ccd` | Super Grafx discs are catalogued but the CD image is what you feed it; the PC-FX core is offered for both |
 | Atari 2600 / 7800 / Lynx | `.a26 .a78 .lnx` | paddles drive the stick; colour and both difficulty switches are real buttons, because games read them |
-| Neo Geo Pocket / WonderSwan | `.ngp .ngpc .ws .wsc` | both rotate with the phone if you let them |
-| Arcade | `.zip .7z .chd .fbneo` | set names matter: FBNeo wants the zip named after the set it is in |
+| Neo Geo Pocket / WonderSwan | `.ngp .ngc .ws .wsc .pc2` | both rotate with the phone if you let them |
+| Arcade | `.zip .7z .chd .rom` | set names matter: FBNeo wants the zip named after the set it is in |
 | C64 / VIC-20 | `.d64 .t64 .tap .crt .prg .zip` | tape images start with the `run` button on the computer deck's pad |
-| MS-DOS / ScummVM | `.zip .conf .dosbox .scummvm` | the whole game folder goes in one archive; mounts are configured per game |
+| MS-DOS / ScummVM | `.zip .conf .exe .dosbox` | the whole game folder goes in one archive; there is no ScummVM core here, so the adventure sets run as DOS executables |
 
 ## Controls
 
@@ -178,10 +182,16 @@ worth knowing which one does what:
   every `Range` request a disc image needs.
 
 After you have booted a game once, it boots again with the radio off.
-`Settings ▸ Emulator ▸ Warm the core cache` fetches the loader files for all 26
-decks up front (the list is derived from what each deck would actually request,
-so it cannot drift). To make even the *first* run work offline, mirror the
-payload:
+`Settings ▸ Emulator ▸ Warm the loader cache` pulls the five small files every
+boot needs — `loader.js`, `emulator.min.js`, `emulator.min.css`, `version.json`,
+`cores/cores.json` — into Cache Storage. The cores themselves are *not* in that
+list on purpose: each one is a single `cores/<name>-wasm.data` blob of tens of
+megabytes that the runtime keeps in IndexedDB, and a second copy in the app's own
+48 MB cache would push the app out. The *channel* dropdown lists only version
+directories the CDN really has (`node tools/refresh-runtime.mjs` refreshes that
+snapshot, and `npm test` fails if a channel in the code is not in it).
+
+To make even the *first* run work offline, mirror the payload:
 
 ```sh
 npm run vendor
