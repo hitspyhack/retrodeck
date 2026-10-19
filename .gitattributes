@@ -1,0 +1,16 @@
+# Line endings: this project's build is verified byte-for-byte (a generated file
+# that differs by one CRLF would fail `npm test`), so normalise on commit and let
+# a Windows clone work without phantom diffs.
+* text=auto eol=lf
+
+# Rewritten by `npm run build`; not hand-edited. GitHub collapses them in PRs.
+js/data/games.generated.js linguist-generated=true
+data/games.json linguist-generated=true
+
+# Data is text and reviewable; nothing below is, and none of it is committed.
+data/source/games.tsv  text diff=tsv
+*.png binary
+*.jpg binary
+*.webp binary
+*.wasm binary
+*.data binary
