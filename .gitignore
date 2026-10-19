@@ -112,3 +112,7 @@ Thumbs.db
 
 # browser-check output: screenshots and the throwaway probe ROM
 .browser-check/
+
+# --- one-off archives: `git archive`/`git bundle` output, never part of the repo
+/retrodeck.zip
+/retrodeck.bundle
