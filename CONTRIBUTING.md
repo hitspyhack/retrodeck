@@ -49,7 +49,7 @@ It self-skips when Playwright is not installed, so the suite stays install-free.
 | A console or handheld | `js/data/systems.js` (add the core id from `cores/cores.json`) |
 | A shell with its defaults | `js/data/models.js` |
 | A faceplate / colourway | `js/data/skins.js` |
-| Button placement for a shell | `js/data/layouts.js` (`tools/check-layouts.mjs` audits the boxes) |
+| Button placement for a shell | `js/data/layouts.js` - `npm test` audits every box, and prints which layouts draw a widget past the 100×46 field |
 | A playable title, no emulator | `js/games/*.js` + `js/games/index.js` |
 | A ROM-only shelf | `homebrew/<system>/README.md`, nothing else |
 | A setting | `js/core/store.js` defaults, then `js/views/settings.js` |

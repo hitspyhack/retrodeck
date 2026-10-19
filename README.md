@@ -171,7 +171,8 @@ museum kiosk or a plane.
 ## Tests
 
 ```sh
-npm test            # 25 checks, ~7 s, no dependencies
+npm test            # 26 checks, ~7 s, no dependencies
+npm run github:push -- <owner>   # publish with only a token (tools/publish.sh)
 npm run test:fast   # the static ones only
 npm run test:sw     # sw.js against stubs, nothing else can reach it
 npm run imports     # every module in js/, imported under the DOM shim
@@ -260,7 +261,8 @@ js/views/             home, library, decks, deck, vault, settings, player
 js/ui.js              100-line element builder, sheets, toasts, file pickers
 server.mjs            static server: wasm/mjs types, ETag, ranges, COOP/COEP
 tools/                build, test, sim, css audit, icons, vendor mirror, runtime
-                      snapshot refresh, import check, service-worker/server checks
+                      snapshot refresh, import check, sw/server checks, dist builder,
+                      publish (tools/publish.sh, token from GH_TOKEN only)
 docs/DEPLOYING.md     dist/, four hosts, the two headers that matter, offline mirror
 docs/PLAYING.md       imports, controls, saves (and why they are one-way), slow, offline
 CONTRIBUTING.md       where each kind of change goes, and the two rules the repo learned

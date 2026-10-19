@@ -34,6 +34,23 @@ point at.
 All four config files set the same two headers, and `npm test` fails if one of them
 stops doing so.
 
+## Pushing it somewhere
+
+`tools/publish.sh` is the publish path for a machine with nothing installed - no
+credential helper, no `gh`, only a fine-grained token (Contents: read+write on that
+one repository, and it cannot create the repository):
+
+```sh
+GH_TOKEN=github_pat_… tools/publish.sh <owner> [repo] [branch]
+npm run github:push -- <owner>          # same thing
+```
+
+It takes the token from the environment only, sends it as an `Authorization`
+header so it cannot leak through a redirect or a quoted remote URL, configures it
+for the single `git -c` invocation (so `git remote -v` stays clean afterwards),
+refuses a dirty tree, and finishes with `ls-remote` so "pushed" is a fact rather
+than a hope.
+
 ## 3. The two headers that actually matter
 
 ```

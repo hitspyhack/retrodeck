@@ -21,7 +21,8 @@
     "deploy:prepare": "node tools/make-dist.mjs",
     "deploy:check": "node tools/make-dist.mjs --check",
     "test:browser": "node tools/browser-check.mjs",
-    "deploy:check:full": "node tools/make-dist.mjs && node tools/browser-check.mjs"
+    "deploy:check:full": "node tools/make-dist.mjs && node tools/browser-check.mjs",
+    "github:push": "tools/publish.sh"
   },
   "engines": {
     "node": ">=18"

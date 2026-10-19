@@ -308,6 +308,54 @@ check("the browser lane can always report its result and then exit", () => {
   return `${claims.length} exit-path claims, budget ${overall}s of ${mins * 60}s`;
 });
 
+check("nothing in the repo reaches outside the repo", () => {
+  // The suite is supposed to run from a plain folder: no install, no network, no
+  // sibling scratch files. That is easy to break by accident - a test fixture
+  // that lives one directory up, a path copied out of a sandbox, a tool invoked
+  // by name but never committed - and each break only shows up on someone
+  // else's machine, so it is checked here instead.
+  const skip = new Set(["node_modules", ".git", "dist", "vendor", ".browser-check", ".arena", ".cache"]);
+  const TEXT = /\.(js|mjs|cjs|json|md|html|css|yml|yaml|sh|toml|txt|webmanifest)$/i;
+  const found = [];
+  const walk = (dir) => {
+    for (const name of readdirSync(join(ROOT, dir))) {
+      if (skip.has(name)) continue;
+      const rel = dir ? `${dir}/${name}` : name;
+      const abs = join(ROOT, rel);
+      if (statSync(abs).isDirectory()) { walk(rel); continue; }
+      if (!TEXT.test(name)) continue;
+      const src = read(rel);
+      const hits = [];
+      if (/\/home\/[A-Za-z0-9_.-]+\//.test(src)) hits.push("an absolute home-directory path");
+      for (const m of src.matchAll(/["'`]?((?:tools|docs|js|css)\/[A-Za-z0-9._\/-]+\.(?:mjs|js|md|css|json))["'`]?/g)) {
+        if (!existsSync(join(ROOT, m[1]))) hits.push(`a reference to ${m[1]}, which is not in the tree`);
+      }
+      for (const h of hits) found.push(`${rel}: ${h}`);
+    }
+  };
+  walk("");
+  // every tool the suite or package.json can invoke has to be a file in the tree
+  const pkg = JSON.parse(read("package.json"));
+  const wanted = [];
+  for (const cmd of Object.values(pkg.scripts)) {
+    for (const m of cmd.matchAll(/((?:tools|scripts)\/[A-Za-z0-9._-]+\.(?:mjs|sh))/g)) wanted.push(m[1]);
+  }
+  for (const f of new Set(wanted)) {
+    if (!existsSync(join(ROOT, f))) found.push(`package.json runs ${f}, which does not exist`);
+  }
+  // a publish script that has a token in it is not a publish script
+  const pub = read(join("tools", "publish.sh"));
+  if (/github_pat_[A-Za-z0-9_]{10,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}/.test(pub)) {
+    found.push("tools/publish.sh contains what looks like a real token");
+  }
+  if (!/GH_TOKEN/.test(pub) || !/\$\{1:/.test(pub)) {
+    found.push("tools/publish.sh no longer takes its token from the environment and its owner from argv");
+  }
+  const uniq = [...new Set(found)];
+  if (uniq.length) throw new Error(uniq.slice(0, 10).join("\n"));
+  return `${wanted.length} entry points, every one of them in the tree`;
+});
+
 check("a deploy folder can be built and contains what the app requests", () => {
   const out = spawn("tools/make-dist.mjs");
   const check2 = spawn("tools/make-dist.mjs", ["--check"]);
