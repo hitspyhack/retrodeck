@@ -84,15 +84,54 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # `configure-pages` answers 400 while Settings ▸ Pages ▸ Source is still
+      # "Deploy from a branch", and a permanently red job on main teaches people
+      # to ignore red. So ask the API first: publish when Pages is listening to
+      # Actions, otherwise say what to click - the branch pipeline is serving the
+      # repository root in the meantime, and the app runs from there (relative
+      # URLs only, no rewrite rules).
+      - name: is Pages listening to Actions?
+        id: src
+        env:
+          API: ${{ github.api_url }}
+          TOK: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          type=$(curl -sf -H "authorization: Bearer $TOK" "$API/repos/$GITHUB_REPOSITORY/pages" \
+            | python3 -c "import json,sys; print(json.load(sys.stdin).get('source',{}).get('type',''))" 2>/dev/null || true)
+          echo "type=$type" >> "$GITHUB_OUTPUT"
+          if [ "$type" != "github_actions" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Pages deploy skipped"
+              echo
+              echo "Pages source is \`${type:-unset}\`, not \`github_actions\`, so this workflow has"
+              echo "nothing to publish into and \`actions/configure-pages\` would fail with a 400."
+              echo
+              echo "- The site the branch pipeline publishes is live at"
+              echo "  https://$GITHUB_REPOSITORY.github.io/${GITHUB_REPOSITORY#*/}/ - that is the"
+              echo "  repository root, and the app works from it as it is."
+              echo "- To have CI publish \`dist/\` (the audited deploy folder) instead: **Settings ▸"
+              echo "  Pages ▸ Source ▸ GitHub Actions**. No other change is needed; the next run on"
+              echo "  main will deploy it."
+              echo "- Note what neither folder can do on Pages: set response headers. Threads need"
+              echo "  COOP + COEP, so hosted Pages runs single-threaded cores - see docs/DEPLOYING.md."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
       - uses: actions/checkout@v4
+        if: steps.src.outputs.skip != 'true'
       - uses: actions/setup-node@v4
+        if: steps.src.outputs.skip != 'true'
         with:
           node-version: "22"
       - name: build the deploy folder
+        if: steps.src.outputs.skip != 'true'
         run: npm run deploy:prepare
       - uses: actions/configure-pages@v5
+        if: steps.src.outputs.skip != 'true'
       - uses: actions/upload-pages-artifact@v3
+        if: steps.src.outputs.skip != 'true'
         with:
           path: dist
       - id: deployment
+        if: steps.src.outputs.skip != 'true'
         uses: actions/deploy-pages@v4

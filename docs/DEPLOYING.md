@@ -25,7 +25,7 @@ point at.
 
 | Host | Config in the repo | Notes |
 | --- | --- | --- |
-| GitHub Pages | `.github/workflows/ci.yml` → `pages` job | builds `dist/` on every merge to `main`; needs Settings ▸ Pages ▸ Source = *GitHub Actions* once |
+| GitHub Pages | `.github/workflows/ci.yml` → `pages` job | builds `dist/` on every merge to `main`, once Settings ▸ Pages ▸ Source is *GitHub Actions*. Until you flip that switch the job prints why it skipped in the run summary and stays green - Pages is publishing the repository root from the branch pipeline, and the app runs from there |
 | Cloudflare Pages | `_headers` | build `npm run deploy:prepare`, output `dist` |
 | Netlify | `netlify.toml` | same |
 | Vercel | `vercel.json` | same |
